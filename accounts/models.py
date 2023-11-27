@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser, BaseUserManager, Group, Permission
+from django.contrib.auth.models import AbstractUser
 
 
 class UserAccount(AbstractUser):
@@ -39,5 +39,6 @@ class VendorProfile(models.Model):
 
 class AdminProfile(models.Model):
     user = models.OneToOneField(UserAccount, on_delete=models.CASCADE, related_name='admin_profile')
+
     def __str__(self):
         return str(self.user)

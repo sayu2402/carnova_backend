@@ -36,3 +36,9 @@ class UserModelSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = '__all__'  
         depth = 2
+
+class VendorModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VendorProfile
+        fields = '__all__'  
+        depth = 2
