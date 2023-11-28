@@ -219,7 +219,7 @@ def userlist(request):
 
 
 
-@api_view(['GET'])        
+@api_view(['GET'])
 def vendorlist(request):
     if request.method == 'GET':
         
