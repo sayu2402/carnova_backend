@@ -11,12 +11,8 @@ from django.conf import settings
 
 @api_view(['POST'])
 def generate_otp_and_send_email(request):
-    print("utilsssssssssss")
     if request.method == 'POST':
-        print("utilsssssssssss")
-        print("data",request.data)
         serializer = EmailOTPSerializer(data=request.data)
-        print("serializer",serializer)
         if serializer.is_valid():
             email = serializer.validated_data['email']
             otp = str(random.randint(1000, 9999))

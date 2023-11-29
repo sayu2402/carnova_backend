@@ -46,7 +46,6 @@ class UserLoginView(APIView):
                     'role': user.role,
                     'profile_photo': refresh['profile_photo'],
                 }
-                print("Serialized Data:", data)
                 return Response(data, status=status.HTTP_200_OK)
             
             return Response({
@@ -56,7 +55,6 @@ class UserLoginView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            print("Error:", e)
             return Response({'message': 'Internal server error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
@@ -71,7 +69,6 @@ class PartnerLoginView(APIView):
                 password = serializer.data['password']
                 
                 user = authenticate(email=email, password=password)
-                print("user===============================",user)
                 if user is None or user.role != 'partner' :
                     data = {
                         'message': 'invalid credentials',
@@ -110,9 +107,7 @@ class AdminLoginView(APIView):
             if serializer.is_valid() :
                 email =   serializer.data['email']  # Prefix with 'partner-'
                 password = serializer.data['password']
-                print("usemailer",email)
                 user = authenticate(email=email, password=password)
-                print("user",user)
                 if user is None or user.role != 'admin':
                     data = {
                         'message': 'invalid credentials',
@@ -156,12 +151,10 @@ def getRoutes(request):
 
 class UserSignupAPI(APIView):
     def post(self,request):
-        print(request.data,"fffffffffffffffffffffff")
         serializer = SignupSerializer(data=request.data)
         if serializer.is_valid():
             user_data = serializer.validated_data
            
-            print(user_data,"ser_data")
             user = UserAccount(
                 email = user_data['email'],
                 
@@ -175,7 +168,6 @@ class UserSignupAPI(APIView):
 
             UserProfile.objects.create(user=user)
             return Response({'message':'Account created successfully.'},status=status.HTTP_201_CREATED)
-        print("im here",serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -200,9 +192,7 @@ class PartnerSignupAPI(APIView):
             user.save()
 
             VendorProfile.objects.create(user=user)
-            print('partner is created ')
             return Response({'message':'Account created successfully.'},status=status.HTTP_201_CREATED)
-        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
