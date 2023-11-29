@@ -65,7 +65,7 @@ class PartnerLoginView(APIView):
             serializer = LoginSerializer(data=data)
             
             if serializer.is_valid():
-                email = serializer.data['email']  # Prefix with 'partner-'
+                email = serializer.data['email']
                 password = serializer.data['password']
                 
                 user = authenticate(email=email, password=password)
@@ -105,7 +105,7 @@ class AdminLoginView(APIView):
             serializer = LoginSerializer(data=data)
             
             if serializer.is_valid() :
-                email =   serializer.data['email']  # Prefix with 'partner-'
+                email =   serializer.data['email']
                 password = serializer.data['password']
                 user = authenticate(email=email, password=password)
                 if user is None or user.role != 'admin':
@@ -136,19 +136,15 @@ class AdminLoginView(APIView):
             print(e)
 
  
-@api_view(['GET'])
-def getRoutes(request):
-    routes=[
-        '/api/token',
-        # '/api/token/refresh'
-    ]
-    return Response(routes)
+class GetRoutesView(APIView):
+    def get(self, request, *args, **kwargs):
+        routes = [
+            '/api/token',
+            # '/api/token/refresh'
+        ]
+        return Response(routes)
 
-
-
-
-
-
+#api for user signup view
 class UserSignupAPI(APIView):
     def post(self,request):
         serializer = SignupSerializer(data=request.data)
@@ -171,8 +167,7 @@ class UserSignupAPI(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-         
+# api for patner signup
 class PartnerSignupAPI(APIView):
     def post(self,request):
         serializer = SignupSerializer(data=request.data)
@@ -196,26 +191,31 @@ class PartnerSignupAPI(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])        
-def userlist(request):
-    if request.method == 'GET':
-        
+# list the user list
+class UserListView(APIView):
+    def get(self, request, *args, **kwargs):
         data = UserProfile.objects.all()
-        
         serializer = UserModelSerializer(data, many=True)
-        
-        return Response(serializer.data,status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def post(self, request, *args, **kwargs):
+        serializer = UserModelSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-@api_view(['GET'])
-def vendorlist(request):
-    if request.method == 'GET':
-        
+# list the Vendor list
+class VendorListView(APIView):
+    def get(self, request, *args, **kwargs):
         data = VendorProfile.objects.all()
-         
         serializer = VendorModelSerializer(data, many=True)
-        
-        return Response(serializer.data,status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def post(self, request, *args, **kwargs):
+        serializer = VendorModelSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
