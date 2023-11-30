@@ -97,6 +97,7 @@ class PartnerLoginView(APIView):
         except Exception as e:
             print(e)
 
+
 class AdminLoginView(APIView):
     def post(self, request):
         try:
