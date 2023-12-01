@@ -42,7 +42,6 @@ REST_FRAMEWORK = {
 
 # Application definition
 
-SITE_ID = 1
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -54,16 +53,15 @@ INSTALLED_APPS = [
     'accounts',
     'rest_framework',
     'corsheaders',
-    'oauth2_provider',
-    'social_django',
+
+    'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'dj_rest_auth',
-    'drf_yasg',
-    'rest_framework.authtoken',
 ]
+
+SITE_ID = 1
 
 
 MIDDLEWARE = [
@@ -242,10 +240,9 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 AUTHENTICATION_BACKENDS = (
-    'social_core.backends.google.GoogleOAuth2',
-    'drf_social_oauth2.backends.DjangoOAuth2',
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.accounts.auth_backends.AuthenticationBackend',
+    'allauth.account.auth_backends.AuthenticationBackend'
+
 )
 
 
@@ -269,7 +266,7 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
         'AUTH_PARAMS': {
             'access_type': 'online',
-            'redirect_uri': "http://127.0.0.1:8000/auth/complete/google-oauth2/" 
+            'redirect_uri': "http://localhost/accounts/google/login/callback/" 
         }
     }
 }
