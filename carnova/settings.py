@@ -35,7 +35,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         'drf_social_oauth2.authentication.SocialAuthentication',
     ]
 }
@@ -53,12 +52,15 @@ INSTALLED_APPS = [
     'accounts',
     'rest_framework',
     'corsheaders',
+    'dj_rest_auth',
+    'rest_framework.authtoken',
 
     'django.contrib.sites',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'dj_rest_auth.registration',
 ]
 
 SITE_ID = 1
@@ -113,7 +115,7 @@ CORS_ALLOW_METHODS = [
     "OPTIONS",
     "DELETE",
     "PUT",
-    "PATCH",   # Add any other methods you need
+    "PATCH",
 ]
 
 
@@ -125,7 +127,7 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(minutes=6),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
-    "UPDATE_LAST_LOGIN": False,
+    "UPDATE_LAST_LOGIN": False, 
 
     "ALGORITHM": "HS256",
     
@@ -266,7 +268,7 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
         'AUTH_PARAMS': {
             'access_type': 'online',
-            'redirect_uri': "http://localhost/accounts/google/login/callback/" 
+            'redirect_uri': "http://127.0.0.1:8000/accounts/google/login/callback/" 
         }
     }
 }

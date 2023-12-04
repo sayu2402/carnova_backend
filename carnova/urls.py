@@ -2,12 +2,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from accounts.views import GoogleLogin
 
 urlpatterns = [
     path('api/', include('accounts.urls')),
-    # path('api-auth/', include('drf_social_oauth2.urls', namespace='drf')),
-    # path('auth/', include('social_django.urls', namespace='social')),
-    path("accounts/", include("allauth.urls")),
+    path('dj-rest-auth/', include('dj_rest_auth.urls')),
+    path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('dj-rest-auth/google/', GoogleLogin.as_view(), name='google_login'),
     path('admin/', admin.site.urls),
 ]
 
