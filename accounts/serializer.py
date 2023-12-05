@@ -42,3 +42,9 @@ class VendorModelSerializer(serializers.ModelSerializer):
         model = VendorProfile
         fields = '__all__'  
         depth = 2
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAccount
+        fields = '__all__'
+        depth = 1

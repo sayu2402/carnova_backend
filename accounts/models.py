@@ -25,6 +25,7 @@ class UserAccount(AbstractUser):
     def __str__(self):
         return self.email
 
+
 class UserProfile(models.Model):
     user = models.OneToOneField(UserAccount, on_delete=models.CASCADE, related_name='user_profile')
 
@@ -42,3 +43,4 @@ class AdminProfile(models.Model):
 
     def __str__(self):
         return str(self.user)
+    

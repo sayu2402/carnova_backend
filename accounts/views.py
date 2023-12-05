@@ -148,6 +148,7 @@ class GetRoutesView(APIView):
         ]
         return Response(routes)
 
+
 #api for user signup view
 class UserSignupAPI(APIView):
     def post(self,request):

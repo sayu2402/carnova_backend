@@ -1,12 +1,7 @@
 from django.urls import path 
-from . import views
 from . import emails
-
 from .views import *
-from rest_framework_simplejwt.views import (
-   
-    TokenRefreshView,
-)
+
 
 urlpatterns=[
     path('', GetRoutesView.as_view(), name='get-routes'),
