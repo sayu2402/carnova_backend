@@ -47,10 +47,6 @@ class ProfileUpdateView(APIView):
                 user_profile.username = user_data['username']
             if 'phone_no' in user_data and user_data['phone_no'] is not None:
                 user_profile.phone_no = user_data['phone_no']
-            
-            
-            print(f"Updated username: {user_profile.username}")
-            print(f"Updated phone_no: {user_profile.phone_no}")
 
 
             user_profile.save()
