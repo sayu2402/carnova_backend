@@ -1,11 +1,7 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializer import *
 from .emails import *
-from rest_framework.exceptions import AuthenticationFailed
-import jwt, datetime
-from rest_framework import permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from rest_framework import status
@@ -24,7 +20,7 @@ class UserLoginView(APIView):
             serializer = LoginSerializer(data=data) 
             
             if serializer.is_valid():
-                email = serializer.data['email']  # Prefix with 'user-'
+                email = serializer.data['email']
                 password = serializer.data['password']
                 user = authenticate(email=email, password=password)
                 

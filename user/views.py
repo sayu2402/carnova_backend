@@ -4,7 +4,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from accounts.serializer import CustomUserSerializer, UserProfileUpdateSerializer
 from rest_framework import status
-
+from django.contrib.auth.hashers import make_password, check_password
+from .serializer import ChangePasswordSerializer
 
 
 # Create your views here
@@ -24,7 +25,6 @@ class UserProfileView(APIView):
 class ProfileUpdateView(APIView):
     def get_object(self, user_id):
         try:
-            print("user_id:______________________________", user_id)
             return UserAccount.objects.get(id=user_id)
         
         except UserAccount.DoesNotExist:
@@ -53,3 +53,32 @@ class ProfileUpdateView(APIView):
             return Response({'message': 'Account updated successfully.'}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class ChangePasswordView(APIView):
+    def post(self, request, user_id):
+        user_profile = self.get_object(user_id)
+
+        if not user_profile:
+            return Response({'message': 'User profile not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ChangePasswordSerializer(data=request.data)
+
+        if serializer.is_valid():
+            current_password = serializer.validated_data.get('current_password')
+            new_password = serializer.validated_data.get('new_password')
+
+            if not check_password(current_password, user_profile.password):
+                return Response({'message': 'Current password is incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            user_profile.password = make_password(new_password)
+            user_profile.save()
+            return Response({'message': 'Password updated successfully.'}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_object(self, user_id):
+        try:
+            return UserAccount.objects.get(id=user_id)
+        except UserAccount.DoesNotExist:
+            return None
