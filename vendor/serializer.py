@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from accounts.models import UserAccount
+from accounts.models import UserAccount, VendorProfile
+from .models import CarHandling
 
 
 
@@ -15,3 +16,9 @@ class VendorProfileUpdateSerializer(serializers.ModelSerializer):
         model = UserAccount
         fields = '__all__'
         depth = 1
+
+
+class CarHandlingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarHandling
+        fields = '__all__'

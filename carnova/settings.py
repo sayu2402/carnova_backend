@@ -36,6 +36,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'drf_social_oauth2.authentication.SocialAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ]
 }
 
@@ -61,6 +62,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'dj_rest_auth.registration',
+    'user',
+    'vendor',
 ]
 
 SITE_ID = 1
@@ -271,3 +274,14 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+
+
+AWS_ACCESS_KEY_ID = 'AKIA4RGN7JSMXVEQ7I64'
+AWS_SECRET_ACCESS_KEY = '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'
+AWS_STORAGE_BUCKET_NAME = 'carnova'
+AWS_S3_SIGNATURE_NAME = 's3v4',
+AWS_S3_REGION_NAME = 'ap-south-1'
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL =  None
+AWS_S3_VERITY = True
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

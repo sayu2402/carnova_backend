@@ -1,11 +1,12 @@
-from django.shortcuts import render
-from accounts.models import UserAccount
+from django.shortcuts import get_object_or_404, render
+from accounts.models import UserAccount, VendorProfile
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializer import VendorModelSerializer, VendorProfileUpdateSerializer
+from .serializer import VendorModelSerializer, VendorProfileUpdateSerializer, CarHandlingSerializer
 from rest_framework import status
 from user.serializer import ChangePasswordSerializer
 from django.contrib.auth.hashers import make_password, check_password
+from .models import CarHandling
 
 
 
@@ -83,3 +84,18 @@ class VendorChangePasswordView(APIView):
             return UserAccount.objects.get(id=user_id)
         except UserAccount.DoesNotExist:
             return None
+        
+
+class AddCarView(APIView):
+    def post(self, request, vendor_id):
+        vendor = get_object_or_404(VendorProfile, user__id=vendor_id)
+
+        # Add 'partner' to the request data before validation
+        request.data['vendor'] = vendor.id
+        serializer = CarHandlingSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response( status=status.HTTP_201_CREATED) 
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
