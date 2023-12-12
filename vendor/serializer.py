@@ -33,3 +33,4 @@ class CarHandlingSerializer(serializers.ModelSerializer):
             car_handling.save()
 
         return car_handling
+

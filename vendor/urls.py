@@ -8,4 +8,5 @@ urlpatterns=[
     path('change-password/<int:user_id>/', VendorChangePasswordView.as_view(), name='change-password'),
     path('add-car/<int:vendor_id>/', AddCarView.as_view(), name='add-car'),
     path('car-details/<int:vendor_id>/', VendorCarDetailsView.as_view(), name='vendor-car-details'),
+    path('edit-car/<int:car_id>/', EditCarDetailsView.as_view(), name='edit-car-details'),
 ]

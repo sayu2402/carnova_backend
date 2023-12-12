@@ -107,3 +107,19 @@ class VendorCarDetailsView(APIView):
         cars = CarHandling.objects.filter(vendor__user__id=vendor_id)
         serializer = CarHandlingSerializer(cars, many=True)
         return Response(serializer.data)
+
+
+class EditCarDetailsView(APIView):
+    def get(self, request, car_id):
+        car = get_object_or_404(CarHandling, id=car_id)
+        serializer = CarHandlingSerializer(car)
+        return Response(serializer.data)
+
+    def patch(self, request, car_id):
+        car = get_object_or_404(CarHandling, id=car_id)
+        serializer = CarHandlingSerializer(car, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
