@@ -19,6 +19,12 @@ class CarHandling(models.Model):
         ('Normal', 'Normal'),
     ]
 
+    VERIFICATION_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    ]
+
     vendor = models.ForeignKey(VendorProfile, on_delete=models.CASCADE)
     car_name = models.CharField(max_length=50)
     brand = models.CharField(max_length=50)
@@ -31,6 +37,7 @@ class CarHandling(models.Model):
     car_photo = models.ImageField(upload_to='')
     document = models.FileField(upload_to='')
     is_available = models.BooleanField(default=True)
+    verification_status = models.CharField(max_length=20, choices=VERIFICATION_CHOICES, default='Pending')
 
     def __str__(self):
         return f"{self.brand} {self.car_name}"

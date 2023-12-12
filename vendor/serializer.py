@@ -22,3 +22,14 @@ class CarHandlingSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarHandling
         fields = '__all__'
+
+    def create(self, validated_data):
+        vendor_data = validated_data.pop('vendor', None)
+
+        car_handling = CarHandling.objects.create(**validated_data)
+
+        if vendor_data is not None:
+            car_handling.vendor = vendor_data
+            car_handling.save()
+
+        return car_handling
