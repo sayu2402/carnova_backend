@@ -6,6 +6,7 @@ from .serializer import VendorModelSerializer, VendorProfileUpdateSerializer, Ca
 from rest_framework import status
 from user.serializer import ChangePasswordSerializer
 from django.contrib.auth.hashers import make_password, check_password
+from .models import CarHandling
 
 
 # Create your views here.
@@ -99,3 +100,10 @@ class AddCarView(APIView):
         else:
             print(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class VendorCarDetailsView(APIView):
+    def get(self, request, vendor_id):
+        cars = CarHandling.objects.filter(vendor__user__id=vendor_id)
+        serializer = CarHandlingSerializer(cars, many=True)
+        return Response(serializer.data)
