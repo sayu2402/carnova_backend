@@ -6,6 +6,9 @@ from accounts.serializer import CustomUserSerializer, UserProfileUpdateSerialize
 from rest_framework import status
 from django.contrib.auth.hashers import make_password, check_password
 from .serializer import ChangePasswordSerializer
+from vendor.serializer import CarHandlingSerializer
+from vendor.models import CarHandling
+from django.shortcuts import get_object_or_404
 
 
 # Create your views here
@@ -82,3 +85,21 @@ class ChangePasswordView(APIView):
             return UserAccount.objects.get(id=user_id)
         except UserAccount.DoesNotExist:
             return None
+
+
+class CarBrowseView(APIView):
+    def get(self, request, *args, **kwargs):
+        cars = CarHandling.objects.filter(is_available=True)
+        serializer = CarHandlingSerializer(cars, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class CarDetailView(APIView):
+    def get(self, request, car_id, *args, **kwargs):
+        car = get_object_or_404(CarHandling, id=car_id)
+        serializer = CarHandlingSerializer(car)
+
+        serialized_data = serializer.data
+        serialized_data['vendor_name'] = car.vendor.user.username
+
+        return Response(serialized_data, status=status.HTTP_200_OK)
