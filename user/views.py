@@ -89,7 +89,7 @@ class ChangePasswordView(APIView):
 
 class CarBrowseView(APIView):
     def get(self, request, *args, **kwargs):
-        cars = CarHandling.objects.filter(is_available=True, verification_status='Approved')
+        cars = CarHandling.objects.filter(verification_status='Approved')
         serializer = CarHandlingSerializer(cars, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

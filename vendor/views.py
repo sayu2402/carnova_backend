@@ -89,14 +89,20 @@ class AddCarView(APIView):
     def post(self, request, vendor_id):
         vendor = get_object_or_404(VendorProfile, user__id=vendor_id)
         vendor_name = vendor.user.username
-        # Add 'partner' to the request data before validation
-        request.data['vendor_name'] = vendor_name
-        request.data['vendor'] = vendor.id
-        serializer = CarHandlingSerializer(data=request.data)
+
+        # Create a mutable copy of request.data
+        mutable_data = request.data.copy()
+
+        # Add 'vendor_name' and 'vendor' to the mutable data
+        mutable_data['vendor_name'] = vendor_name
+        mutable_data['vendor'] = vendor.id
+
+        # Create a serializer with the mutable data
+        serializer = CarHandlingSerializer(data=mutable_data)
 
         if serializer.is_valid():
             serializer.save(vendor_id=vendor.id)
-            return Response( status=status.HTTP_201_CREATED) 
+            return Response(status=status.HTTP_201_CREATED)
         else:
             print(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

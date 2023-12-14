@@ -4,7 +4,6 @@ from vendor.models import CarHandling
 from rest_framework.response import Response
 from rest_framework import status, generics
 from .serializer import CarHandlingSerializer
-from rest_framework.permissions import IsAdminUser
 from rest_framework.generics import RetrieveAPIView
 
 # Create your views here.
@@ -28,7 +27,6 @@ class CarsList(APIView):
 class VerifyCarView(generics.UpdateAPIView):
     queryset = CarHandling.objects.all()
     serializer_class = CarHandlingSerializer
-    # permission_classes = [IsAdminUser]
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
