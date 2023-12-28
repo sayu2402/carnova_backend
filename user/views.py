@@ -5,10 +5,12 @@ from rest_framework.response import Response
 from accounts.serializer import CustomUserSerializer, UserProfileUpdateSerializer
 from rest_framework import status
 from django.contrib.auth.hashers import make_password, check_password
-from .serializer import ChangePasswordSerializer
+from .serializer import ChangePasswordSerializer, CarAvailabilitySerializer
 from vendor.serializer import CarHandlingSerializer
 from vendor.models import CarHandling
 from django.shortcuts import get_object_or_404
+from .models import *
+from django.http import JsonResponse
 
 
 # Create your views here
@@ -103,3 +105,27 @@ class CarDetailView(APIView):
         serialized_data['vendor_name'] = car.vendor.user.username
 
         return Response(serialized_data, status=status.HTTP_200_OK)
+    
+
+class CarAvailabilityAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        car_id = self.kwargs.get('carId')
+        pickup_date_str = self.kwargs.get('pickupDate').strip()
+        return_date_str = self.kwargs.get('returnDate').strip()
+
+        try:
+            car_booking = Booking.objects.filter(
+                car_id=car_id,
+                return_date__gt=pickup_date_str,
+                pickup_date__lt=return_date_str,
+                is_cancelled=False,
+            )
+
+            if car_booking.exists():
+                return JsonResponse({"message": "Car not available for the selected dates"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return JsonResponse({"message": "Car available for booking"}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print(e)
+            return JsonResponse({"message": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)

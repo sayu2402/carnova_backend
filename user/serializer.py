@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from vendor.models import *
 
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(max_length=128)
@@ -14,3 +15,14 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError("Passwords do not match.")
 
         return data
+
+
+class CarAvailabilitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarHandling
+        fields = ['id', 'model', 'brand', 'availability', 'price']
+
+    availability = serializers.SerializerMethodField()
+
+    def get_availability(self, car):
+        return "Available" if car.is_available() else "Not Available"

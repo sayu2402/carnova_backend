@@ -11,7 +11,7 @@ from rest_framework.generics import RetrieveAPIView
 class CarsList(APIView):
     def get(self, request):
         if request.method == 'GET':
-            cars = CarHandling.objects.all().order_by('-created_at')
+            cars = CarHandling.objects.all().order_by('-id')
 
             # Serialize the data, including the vendor name
             serialized_cars = []
