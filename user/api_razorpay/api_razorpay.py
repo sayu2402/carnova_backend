@@ -7,6 +7,7 @@ from vendor.models import *
 from accounts.models import *
 from user.models import *
 from user.api_razorpay.api_serializer import *
+from datetime import datetime
 
 
 rz_client = RazorpayClient()
@@ -78,18 +79,15 @@ class CreateCarBookingAPIView(APIView):
         customuser_obj=UserAccount.objects.get(id=user_id)
         user_profile=UserProfile.objects.get(user=customuser_obj)
 
-        pickup=pickup_date.split('-')
-        print("pickup::",pickup[2])
+        pickup_datetime = datetime.strptime(pickup_date, "%Y-%m-%d")
+        return_datetime = datetime.strptime(return_date, "%Y-%m-%d")
 
-        day_return=return_date.split('-')
-        print("day_return:",day_return[2])
+        no_ofdays = (return_datetime - pickup_datetime).days + 1
 
-        no_ofdays=int(day_return[2])-int(pickup[2])+1
-        print("no_ofdays::",no_ofdays)
+        daily_rate = car.price 
+        total_amount = daily_rate * no_ofdays
 
-        
         data = request.data
-        print(data,"__data___")
 
         razorpay_order_id = data.get("order_id")
         razorpay_payment_id = data.get("payment_id")
@@ -101,7 +99,6 @@ class CreateCarBookingAPIView(APIView):
             "signature":razorpay_signature,
             }
         
-        print("data_02", data)
 
         create_order_serializer = TransactioncharcheckSerializer(data=data)
 
@@ -115,20 +112,20 @@ class CreateCarBookingAPIView(APIView):
             )
 
             if is_status:
-                total_amount = car.price
                 booking_obj = Booking.objects.create(
                     car=car,
                     user=user_profile,
                     pickup_date=pickup_date,
                     return_date=return_date,
                     total_amount=total_amount,
+                    vendor=car.vendor
                 )
 
                 Transcation.objects.create(
                     booking=booking_obj,
                     user=user_profile,
-                    partner=car.vendor.user.vendor_profile,
-                    partner_share=0.7 * float(total_amount),
+                    vendor=car.vendor,
+                    vendor_share=0.7 * float(total_amount),
                     company_share=0.3 * float(total_amount),
                     signature=razorpay_signature,
                     payment_id=razorpay_payment_id,

@@ -114,10 +114,14 @@ class CarAvailabilityAPIView(APIView):
         return_date_str = self.kwargs.get('returnDate').strip()
 
         try:
+
+            pickup_date = timezone.datetime.strptime(pickup_date_str, '%Y-%m-%d').date()
+            return_date = timezone.datetime.strptime(return_date_str, '%Y-%m-%d').date()
+
             car_booking = Booking.objects.filter(
                 car_id=car_id,
-                return_date__gt=pickup_date_str,
-                pickup_date__lt=return_date_str,
+                return_date__gt=pickup_date,
+                pickup_date__lt=return_date,
                 is_cancelled=False,
             )
 
