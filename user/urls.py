@@ -11,4 +11,5 @@ urlpatterns=[
     path('car-availability/<int:carId>/<str:pickupDate>/<str:returnDate>/', 
          CarAvailabilityAPIView.as_view(), 
          name='check-car-availability'),
+    path('google-login/', UserGoogleLogin.as_view(), name='google-login'),
 ]

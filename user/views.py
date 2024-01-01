@@ -5,12 +5,13 @@ from rest_framework.response import Response
 from accounts.serializer import CustomUserSerializer, UserProfileUpdateSerializer
 from rest_framework import status
 from django.contrib.auth.hashers import make_password, check_password
-from .serializer import ChangePasswordSerializer, CarAvailabilitySerializer
+from .serializer import ChangePasswordSerializer
 from vendor.serializer import CarHandlingSerializer
 from vendor.models import CarHandling
 from django.shortcuts import get_object_or_404
 from .models import *
 from django.http import JsonResponse
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 # Create your views here
@@ -133,3 +134,40 @@ class CarAvailabilityAPIView(APIView):
         except Exception as e:
             print(e)
             return JsonResponse({"message": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserGoogleLogin(APIView):
+    def post(self, request):
+        try:
+            data = request.data
+            if  data:
+           
+                email = data.get('email')           
+                user = UserAccount.objects.filter(email=email).first()
+
+                if user:
+                    user_id = user.id
+
+                    # Generate JWT tokens
+                    refresh = RefreshToken.for_user(user)
+                    data = {
+                        'refresh': str(refresh),
+                        'access': str(refresh.access_token),
+                        'username': user.username,
+                        'user_id': user.id,
+                        'role': user.role,
+                        
+                    }
+                    return Response(data, status=status.HTTP_201_CREATED)
+
+                else:
+                    # Handle the case where no user with the specified email is found
+                    return Response({'error': 'Authentication failed. User not found or invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+            else:
+                return Response({'error': 'Invalid data. Please provide valid input.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            # Handle other exceptions 
+            print(e)
+            return Response({'error': 'Internal server error. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

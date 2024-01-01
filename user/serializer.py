@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from vendor.models import *
+from accounts.models import *
 
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(max_length=128)
