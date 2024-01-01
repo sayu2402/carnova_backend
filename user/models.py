@@ -1,10 +1,10 @@
 from django.db import models
 from django.utils import timezone
-from vendor.models import *
-from accounts.models import *
+from vendor.models import CarHandling, VendorProfile
+from accounts.models import UserProfile
+import datetime
+import uuid
 
-
-# Create your models here.
 
 class Booking(models.Model):
     car = models.ForeignKey(CarHandling, on_delete=models.CASCADE)
@@ -14,6 +14,7 @@ class Booking(models.Model):
     return_date = models.DateField()
     total_amount = models.PositiveIntegerField()
     is_cancelled = models.BooleanField(default=False)
+    order_number = models.CharField(max_length=50, unique=True, default="", editable=False)
 
     class Meta:
         constraints = [
@@ -27,24 +28,38 @@ class Booking(models.Model):
             )
         ]
 
+    def save(self, *args, **kwargs):
+        # Generate order number if not provided
+        if not self.order_number:
+            self.order_number = generate_order_number()
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Booking ID: {self.id}"
 
 
 class Transcation(models.Model):
     booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
-    user = models.ForeignKey(UserProfile,on_delete=models.CASCADE)
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     vendor = models.ForeignKey(VendorProfile, on_delete=models.CASCADE)
     vendor_share = models.DecimalField(max_digits=15, decimal_places=2)
     company_share = models.DecimalField(max_digits=15, decimal_places=2)
-    
+
     transaction_date = models.DateTimeField(auto_now_add=True)
     payment_id = models.CharField(max_length=100, verbose_name="Payment ID", null=True, blank=True)
     order_id = models.CharField(max_length=100, verbose_name="Order ID", null=True, blank=True)
     signature = models.CharField(max_length=200, verbose_name="Signature", null=True, blank=True)
 
-    def _str_(self):
+    def __str__(self):
         return str(self.id)
-    
-    class Meta:
-        ordering = ['-transaction_date']
+
+
+def generate_order_number():
+    yr = int(datetime.date.today().strftime('%Y'))
+    dt = int(datetime.date.today().strftime('%d'))
+    mt = int(datetime.date.today().strftime('%m'))
+    d = datetime.date(yr, mt, dt)
+    current_date = d.strftime("%Y%m%d")
+    unique_id = str(uuid.uuid4().hex)[:8]
+    return current_date + unique_id

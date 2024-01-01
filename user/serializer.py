@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from vendor.models import *
 from accounts.models import *
+from .models import *
 
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(max_length=128)
@@ -27,3 +28,10 @@ class CarAvailabilitySerializer(serializers.ModelSerializer):
 
     def get_availability(self, car):
         return "Available" if car.is_available() else "Not Available"
+
+
+class BookingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = '__all__'
+        depth=2

@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from accounts.models import UserAccount
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from accounts.serializer import CustomUserSerializer, UserProfileUpdateSerializer
 from rest_framework import status
 from django.contrib.auth.hashers import make_password, check_password
-from .serializer import ChangePasswordSerializer
+from .serializer import ChangePasswordSerializer, BookingSerializer
 from vendor.serializer import CarHandlingSerializer
 from vendor.models import CarHandling
 from django.shortcuts import get_object_or_404
@@ -119,6 +120,7 @@ class CarAvailabilityAPIView(APIView):
             pickup_date = timezone.datetime.strptime(pickup_date_str, '%Y-%m-%d').date()
             return_date = timezone.datetime.strptime(return_date_str, '%Y-%m-%d').date()
 
+
             car_booking = Booking.objects.filter(
                 car_id=car_id,
                 return_date__gt=pickup_date,
@@ -146,8 +148,6 @@ class UserGoogleLogin(APIView):
                 user = UserAccount.objects.filter(email=email).first()
 
                 if user:
-                    user_id = user.id
-
                     # Generate JWT tokens
                     refresh = RefreshToken.for_user(user)
                     data = {
@@ -171,3 +171,17 @@ class UserGoogleLogin(APIView):
             # Handle other exceptions 
             print(e)
             return Response({'error': 'Internal server error. Please try again later.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class BookingList(ListAPIView):
+    serializer_class = BookingSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs.get('user_id')
+        user_profile = get_object_or_404(UserProfile, user__id=user_id)
+        return Booking.objects.filter(user=user_profile)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

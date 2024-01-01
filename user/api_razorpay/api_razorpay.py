@@ -43,7 +43,6 @@ class CreateCarOrderAPIView(APIView):
                         amount=amount,
                         currency=currency
                     )
-                    print(order_response,"response_order")
 
                     response = {
                         "status_code": status.HTTP_201_CREATED,
@@ -103,7 +102,6 @@ class CreateCarBookingAPIView(APIView):
         create_order_serializer = TransactioncharcheckSerializer(data=data)
 
         if create_order_serializer.is_valid():
-            print(data,"data_inside_serailizer")
             
             is_status = rz_client.verify_payment(
                 razorpay_order_id,
@@ -135,6 +133,7 @@ class CreateCarBookingAPIView(APIView):
                 response = {
                     "status_code": status.HTTP_201_CREATED,
                     "message": "Order created successfully",
+                    "order_number": booking_obj.order_number
                 }
             else:
                 response = {"status_code": status.HTTP_400_BAD_REQUEST,
@@ -150,3 +149,4 @@ class CreateCarBookingAPIView(APIView):
                 "error": create_order_serializer.errors
             }
             return Response(response)
+
