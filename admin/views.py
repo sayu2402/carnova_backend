@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from .serializer import CarHandlingSerializer
 from rest_framework.generics import RetrieveAPIView
+from user.models import Booking
+from user.serializer import BookingSerializer
 
 # Create your views here.
 
@@ -60,3 +62,8 @@ class CarDetailsView(RetrieveAPIView):
         response_data['vendor_name'] = instance.vendor.user.username
 
         return Response(response_data, status=status.HTTP_200_OK)
+    
+
+class BookingListView(generics.ListAPIView):
+    queryset = Booking.objects.all()
+    serializer_class = BookingSerializer

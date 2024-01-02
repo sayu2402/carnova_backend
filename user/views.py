@@ -14,6 +14,7 @@ from django.shortcuts import get_object_or_404
 from .models import *
 from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.pagination import PageNumberPagination
 
 
 # Create your views here
@@ -92,11 +93,11 @@ class ChangePasswordView(APIView):
             return None
 
 
-class CarBrowseView(APIView):
-    def get(self, request, *args, **kwargs):
-        cars = CarHandling.objects.filter(verification_status='Approved')
-        serializer = CarHandlingSerializer(cars, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class CarBrowseView(ListAPIView):
+    queryset = CarHandling.objects.filter(verification_status='Approved').order_by('id')
+    serializer_class = CarHandlingSerializer
+    pagination_class = PageNumberPagination
+    page_size = 6
 
 
 class CarDetailView(APIView):

@@ -43,8 +43,11 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'drf_social_oauth2.authentication.SocialAuthentication',
         'rest_framework.authentication.TokenAuthentication',
-    ]
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination', 
+    'PAGE_SIZE': 6
 }
+
 
 # Application definition
 
