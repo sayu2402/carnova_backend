@@ -16,6 +16,18 @@ class Booking(models.Model):
     is_cancelled = models.BooleanField(default=False)
     order_number = models.CharField(max_length=50, unique=True, default="", editable=False)
 
+    VERIFICATION_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+
+    verification_status = models.CharField(
+        max_length=10,
+        choices=VERIFICATION_STATUS_CHOICES,
+        default='pending',
+    )
+
     class Meta:
         constraints = [
             models.CheckConstraint(

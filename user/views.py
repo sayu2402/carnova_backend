@@ -2,6 +2,7 @@ from django.shortcuts import render
 from accounts.models import UserAccount
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
+from rest_framework import generics
 from rest_framework.response import Response
 from accounts.serializer import CustomUserSerializer, UserProfileUpdateSerializer
 from rest_framework import status
@@ -184,4 +185,14 @@ class BookingList(ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class BookingDetailView(generics.RetrieveAPIView):
+    queryset = Booking.objects.all()
+    serializer_class = BookingSerializer
+
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)

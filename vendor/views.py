@@ -2,11 +2,12 @@ from django.shortcuts import get_object_or_404, render
 from accounts.models import UserAccount, VendorProfile
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializer import VendorModelSerializer, VendorProfileUpdateSerializer, CarHandlingSerializer
-from rest_framework import status
-from user.serializer import ChangePasswordSerializer
+from .serializer import *
+from rest_framework import generics, status
+from user.serializer import ChangePasswordSerializer, BookingSerializer
 from django.contrib.auth.hashers import make_password, check_password
 from .models import CarHandling
+from user.models import Booking
 
 
 # Create your views here.
@@ -129,3 +130,39 @@ class EditCarDetailsView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class BookingListView(APIView):
+    def get(self, request, id):
+        try:
+            vendor = VendorProfile.objects.get(user_id=id)
+            bookings = Booking.objects.filter(vendor=vendor)
+
+            serialized_bookings = BookingSerializer(bookings, many=True)
+
+            return Response(serialized_bookings.data, status=status.HTTP_200_OK)
+        except VendorProfile.DoesNotExist:
+            return Response({"detail": "Vendor not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+
+class UpdateBookingStatusView(generics.UpdateAPIView):
+    queryset = Booking.objects.all()
+    serializer_class = BookingSerializer
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        verification_status = request.data.get('verification_status', None)
+
+        if verification_status not in ['Approved', 'Rejected']:
+            return Response({'error': 'Invalid verification status'}, status=status.HTTP_400_BAD_REQUEST)
+
+        instance.verification_status = verification_status
+        instance.save()
+
+        # Include vendor_name in the response data
+        serializer = self.get_serializer(instance)
+        response_data = serializer.data
+        response_data['vendor_name'] = instance.vendor.user.username
+
+        return Response(response_data, status=status.HTTP_200_OK)

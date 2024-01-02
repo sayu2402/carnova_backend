@@ -13,4 +13,5 @@ urlpatterns=[
          name='check-car-availability'),
     path('google-login/', UserGoogleLogin.as_view(), name='google-login'),
     path('bookings/<int:user_id>/', BookingList.as_view(), name='booking-list'),
+    path('booking-detail/<int:pk>/', BookingDetailView.as_view(), name='booking-detail'),
 ]

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from accounts.models import UserAccount, VendorProfile
 from .models import CarHandling
+from user.models import Booking
 
 
 
@@ -34,3 +35,9 @@ class CarHandlingSerializer(serializers.ModelSerializer):
 
         return car_handling
 
+
+class BookingHandlingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = '__all__'
+        read_only_fields = ['verification_status']
