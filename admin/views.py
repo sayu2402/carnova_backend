@@ -7,6 +7,8 @@ from .serializer import CarHandlingSerializer
 from rest_framework.generics import RetrieveAPIView
 from user.models import Booking
 from user.serializer import BookingSerializer
+from django.http import JsonResponse
+from admin.tasks import *
 
 # Create your views here.
 
@@ -67,3 +69,11 @@ class CarDetailsView(RetrieveAPIView):
 class BookingListView(generics.ListAPIView):
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
+
+
+def index(request):
+    # Call the Celery task asynchronously
+    send_morning_emails.delay()
+
+    # Return a JSON response
+    return JsonResponse({'message': 'Morning emails are being sent!'})

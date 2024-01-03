@@ -31,14 +31,12 @@ class Booking(models.Model):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=models.Q(pickup_date__gte=timezone.now()),
-                name="pickup_date must be greater than or equal to today"
-            ),
-            models.CheckConstraint(
                 check=models.Q(return_date__gt=models.F('pickup_date')),
                 name="return_date must be greater than pickup_date"
             )
         ]
+
+
 
     def save(self, *args, **kwargs):
         # Generate order number if not provided
