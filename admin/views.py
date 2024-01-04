@@ -67,13 +67,5 @@ class CarDetailsView(RetrieveAPIView):
     
 
 class BookingListView(generics.ListAPIView):
-    queryset = Booking.objects.all()
+    queryset = Booking.objects.all().order_by('id')
     serializer_class = BookingSerializer
-
-
-def index(request):
-    # Call the Celery task asynchronously
-    send_morning_emails.delay()
-
-    # Return a JSON response
-    return JsonResponse({'message': 'Morning emails are being sent!'})

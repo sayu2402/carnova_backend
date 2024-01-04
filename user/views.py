@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from accounts.serializer import CustomUserSerializer, UserProfileUpdateSerializer
 from rest_framework import status
 from django.contrib.auth.hashers import make_password, check_password
-from .serializer import ChangePasswordSerializer, BookingSerializer
+from .serializer import *
 from vendor.serializer import CarHandlingSerializer
 from vendor.models import CarHandling
 from django.shortcuts import get_object_or_404
@@ -196,4 +196,44 @@ class BookingDetailView(generics.RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class CancelOrder(APIView):
+    def post(self, request, user_id, booking_id, *args, **kwargs):
+        try:
+            booking = get_object_or_404(Booking, id=booking_id, user__user__id=user_id)
+
+            wallet, created = Wallet.objects.get_or_create(user=booking.user)
+            wallet.balance += booking.total_amount
+            wallet.save()
+
+            booking.is_cancelled = True
+            booking.save()
+
+            transaction = Transcation.objects.get(booking=booking)
+            transaction.vendor_share -= int(booking.total_amount * 0.7)
+            transaction.company_share -= int(booking.total_amount * 0.3)
+            transaction.save()
+
+            return Response({'message': 'canceled successfully'}, status=status.HTTP_200_OK)
+        
+        except Exception as e:
+            return Response({'message': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    
+class WalletMoney(APIView):
+    def get(self, request, *args, **kwargs):
+        user_id = self.kwargs.get('user_id')
+        user = UserAccount.objects.get(id=user_id)
+        user_profile, created = UserProfile.objects.get_or_create(user=user)
+
+        try:
+            # Try to get the existing wallet
+            wallet = Wallet.objects.get(user=user_profile)
+        except Wallet.DoesNotExist:
+            # If the wallet doesn't exist, create a new one
+            wallet = Wallet.objects.create(user=user_profile)
+
+        serializer = WalletSerializer(wallet)
         return Response(serializer.data, status=status.HTTP_200_OK)

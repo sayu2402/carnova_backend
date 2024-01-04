@@ -35,3 +35,9 @@ class BookingSerializer(serializers.ModelSerializer):
         model = Booking
         fields = '__all__'
         depth=2
+
+
+class WalletSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Wallet
+        fields = ['balance']

@@ -73,3 +73,8 @@ def generate_order_number():
     current_date = d.strftime("%Y%m%d")
     unique_id = str(uuid.uuid4().hex)[:8]
     return current_date + unique_id
+
+
+class Wallet(models.Model):
+    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
