@@ -27,7 +27,8 @@ class CreateCarOrderAPIView(APIView):
             overlapping_bookings = Booking.objects.filter(
                 car=car,
                 return_date__gt=pickup_date,
-                pickup_date__lt=return_date
+                pickup_date__lt=return_date,
+                is_cancelled = False
             )
 
             if overlapping_bookings.exists():
