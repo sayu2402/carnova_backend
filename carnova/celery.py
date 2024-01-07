@@ -17,7 +17,7 @@ app.config_from_object(settings, namespace='CELERY')
 app.conf.beat_schedule = {
     'send-mail-every-day-at-8' : {
         'task': 'admin.tasks.send_morning_emails',
-        'schedule' : crontab(hour=17, minute=18),
+        'schedule' : crontab(hour=15, minute=20),
     }
 }
 

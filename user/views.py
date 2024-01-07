@@ -94,7 +94,7 @@ class ChangePasswordView(APIView):
 
 
 class CarBrowseView(ListAPIView):
-    queryset = CarHandling.objects.filter(verification_status='Approved').order_by('id')
+    queryset = CarHandling.objects.filter(verification_status='Approved').order_by('-id')
     serializer_class = CarHandlingSerializer
     pagination_class = PageNumberPagination
     page_size = 6
@@ -237,3 +237,45 @@ class WalletMoney(APIView):
 
         serializer = WalletSerializer(wallet)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class SearchByLocation(ListAPIView):
+    serializer_class = CarHandlingSerializer  # Replace this with your actual serializer class
+
+    def post(self, request, *args, **kwargs):
+        car_id = self.request.data.get('carId')
+        pickup_date_str = self.request.data.get('pickupDate').strip()
+        return_date_str = self.request.data.get('returnDate').strip()
+        partial_location = self.request.data.get('location', '').strip()
+
+        try:
+            pickup_date = timezone.datetime.strptime(pickup_date_str, '%Y-%m-%d').date()
+            return_date = timezone.datetime.strptime(return_date_str, '%Y-%m-%d').date()
+
+            # Check car availability based on pickup and return dates
+            car_booking = Booking.objects.filter(
+                car_id=car_id,
+                return_date__gt=pickup_date,
+                pickup_date__lt=return_date,
+                is_cancelled=False,
+            )
+
+            if car_booking.exists():
+                return Response({"message": "Car not available for the selected dates"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Check car availability based on partial location match
+            normalized_partial_location = partial_location.lower()
+            matching_cars = CarHandling.objects.filter(
+                location__icontains=normalized_partial_location,
+                is_available=True
+            )
+
+            if matching_cars.exists():
+                serializer = self.get_serializer(matching_cars, many=True)
+                return Response({"message": "Cars available at the location", "matching_cars": serializer.data}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "No cars available at the matched location"}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            print(e)
+            return Response({"message": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)

@@ -15,5 +15,7 @@ urlpatterns=[
     path('bookings/<int:user_id>/', BookingList.as_view(), name='booking-list'),
     path('booking-detail/<int:pk>/', BookingDetailView.as_view(), name='booking-detail'),
     path('wallet/<int:user_id>/', WalletMoney.as_view(), name='wallet'),
-    path('cancel-booking/<int:user_id>/<int:booking_id>/', CancelOrder.as_view(), name='cancel-order')
+    path('cancel-booking/<int:user_id>/<int:booking_id>/', CancelOrder.as_view(), name='cancel-order'),
+    path('search-location', SearchByLocation.as_view(), name='search-location'),
+
 ]
