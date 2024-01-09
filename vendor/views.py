@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404, render
 from accounts.models import UserAccount, VendorProfile
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from .serializer import *
 from rest_framework import generics, status
@@ -110,10 +111,17 @@ class AddCarView(APIView):
 
 
 class VendorCarDetailsView(APIView):
+    pagination_class = PageNumberPagination
+
     def get(self, request, vendor_id):
         cars = CarHandling.objects.filter(vendor__user__id=vendor_id)
-        serializer = CarHandlingSerializer(cars, many=True)
-        return Response(serializer.data)
+
+        # Apply pagination
+        paginator = self.pagination_class()
+        paginated_cars = paginator.paginate_queryset(cars, request)
+        
+        serializer = CarHandlingSerializer(paginated_cars, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 
 class EditCarDetailsView(APIView):

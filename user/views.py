@@ -177,17 +177,20 @@ class UserGoogleLogin(APIView):
 
 class BookingList(ListAPIView):
     serializer_class = BookingSerializer
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         user_id = self.kwargs.get('user_id')
         user_profile = get_object_or_404(UserProfile, user__id=user_id)
-        return Booking.objects.filter(user=user_profile)
+        return Booking.objects.filter(user=user_profile).order_by('-id')
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
 
+        return self.get_paginated_response(serializer.data)
+    
 
 class BookingDetailView(generics.RetrieveAPIView):
     queryset = Booking.objects.all()
