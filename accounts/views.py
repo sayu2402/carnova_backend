@@ -1,4 +1,5 @@
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from .serializer import *
 from .emails import *
@@ -7,6 +8,7 @@ from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.decorators import api_view
 from accounts.models import UserProfile,VendorProfile,UserAccount
+from rest_framework.pagination import PageNumberPagination
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
@@ -193,11 +195,10 @@ class PartnerSignupAPI(APIView):
 
 
 # list the user list
-class UserListView(APIView):
-    def get(self, request, *args, **kwargs):
-        data = UserProfile.objects.all()
-        serializer = UserModelSerializer(data, many=True)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+class UserListView(ListAPIView):
+    queryset = UserProfile.objects.all()
+    serializer_class = UserModelSerializer
+    pagination_class = PageNumberPagination
 
     def post(self, request, *args, **kwargs):
         serializer = UserModelSerializer(data=request.data)
@@ -208,12 +209,11 @@ class UserListView(APIView):
 
 
 # list the Vendor list
-class VendorListView(APIView):
-    def get(self, request, *args, **kwargs):
-        data = VendorProfile.objects.all()
-        serializer = VendorModelSerializer(data, many=True)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
+class VendorListView(ListAPIView):
+    queryset = VendorProfile.objects.all()
+    serializer_class = VendorModelSerializer
+    pagination_class = PageNumberPagination  
+    
     def post(self, request, *args, **kwargs):
         serializer = VendorModelSerializer(data=request.data)
         if serializer.is_valid():

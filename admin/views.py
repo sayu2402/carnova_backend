@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from vendor.models import CarHandling
 from rest_framework.response import Response
 from rest_framework import status, generics
@@ -7,25 +7,33 @@ from .serializer import CarHandlingSerializer
 from rest_framework.generics import RetrieveAPIView
 from user.models import Booking
 from user.serializer import BookingSerializer
-from django.http import JsonResponse
+from rest_framework.pagination import PageNumberPagination
 from admin.tasks import *
+
 
 # Create your views here.
 
-class CarsList(APIView):
-    def get(self, request):
-        if request.method == 'GET':
-            cars = CarHandling.objects.all().order_by('-id')
+class CarsList(ListAPIView):
+    serializer_class = CarHandlingSerializer
+    queryset = CarHandling.objects.all().order_by('-id')
+    pagination_class = PageNumberPagination
+    page_size = 6  # Set your desired page size
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
-            # Serialize the data, including the vendor name
-            serialized_cars = []
-            for car in cars:
-                car_data = CarHandlingSerializer(car).data
-                car_data['vendor_name'] = car.vendor.user.username
-                serialized_cars.append(car_data)
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
 
-            return Response(serialized_cars, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        # Serialize the data, including the vendor name
+        serialized_cars = []
+        for car in queryset:
+            car_data = self.get_serializer(car).data
+            car_data['vendor_name'] = car.vendor.user.username
+            serialized_cars.append(car_data)
+
+        # Return paginated response
+        page = self.paginate_queryset(serialized_cars)
+        return self.get_paginated_response(page) if page else Response(serialized_cars)
 
 
 class VerifyCarView(generics.UpdateAPIView):
