@@ -1,14 +1,22 @@
 from django.shortcuts import render
 from rest_framework.generics import ListAPIView
+from django.views import View
+from rest_framework.views import APIView
 from vendor.models import CarHandling
 from rest_framework.response import Response
 from rest_framework import status, generics
 from .serializer import CarHandlingSerializer
 from rest_framework.generics import RetrieveAPIView
-from user.models import Booking
+from user.models import Booking, Transcation
 from user.serializer import BookingSerializer
 from rest_framework.pagination import PageNumberPagination
 from admin.tasks import *
+from django.db.models import Sum
+from django.http import JsonResponse
+from django.db.models import Count
+from accounts.serializer import *
+
+
 
 
 # Create your views here.
@@ -77,3 +85,69 @@ class CarDetailsView(RetrieveAPIView):
 class BookingListView(generics.ListAPIView):
     queryset = Booking.objects.all().order_by('id')
     serializer_class = BookingSerializer
+
+
+class ChartDataView(View):
+    def get(self, request, *args, **kwargs):
+        # Calculate total revenue
+        total_revenue = Transcation.objects.aggregate(Sum('company_share'))['company_share__sum'] or 0
+
+        # Count number of bookings
+        bookings_count = Booking.objects.count()
+
+        # Count total cars
+        total_cars = CarHandling.objects.count()
+
+        total_vendor = VendorProfile.objects.count()
+
+        # Calculate monthly revenue (assuming transactions have a date field)
+        monthly_revenue = Transcation.objects.filter(transaction_date__month=1).aggregate(Sum('company_share'))['company_share__sum'] or 0
+
+        data = {
+            'totalRevenue': total_revenue,
+            'bookings': bookings_count,
+            'totalCars': total_cars,
+            'monthlyRevenue': monthly_revenue,
+            'total_vendor' : total_vendor,
+        }
+
+        return JsonResponse(data)
+
+
+class PieChartAdminDataView(View):
+    def get(self, request, *args, **kwargs):
+        verification_choices = dict(CarHandling.VERIFICATION_CHOICES)
+        verification_data = CarHandling.objects.values('verification_status').annotate(count=Count('verification_status'))
+
+        # Initialize counts for all choices, even if they are not present in the database
+        data = {
+            'labels': [verification_choices.get(status, status) for status, _ in CarHandling.VERIFICATION_CHOICES],
+            'data': [0] * len(CarHandling.VERIFICATION_CHOICES),
+        }
+
+        # Update counts based on the retrieved data
+        for item in verification_data:
+            status = item['verification_status']
+            index = list(verification_choices.keys()).index(status)
+            data['data'][index] = item['count']
+
+        return JsonResponse(data)
+
+
+class Last5UsersAPIView(APIView):
+    def get(self, request, format=None):
+        last_5_users = UserAccount.objects.order_by('-id')[:5]
+        serializer = CustomUserSerializer(last_5_users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class Last5VendorsAPIView(APIView):
+    def get(self, request, format=None):
+        last_5_vendors = VendorProfile.objects.order_by('-id')[:5]
+        serializer = VendorModelSerializer(last_5_vendors, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class Last5Booking(APIView):
+    def get(self, request, format=None):
+        last_5_booking = Booking.objects.order_by('-id')[:5]
+        serializer = BookingSerializer(last_5_booking, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
