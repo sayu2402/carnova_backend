@@ -10,6 +10,7 @@ urlpatterns = [
     path('api/vendor/', include('vendor.urls')),
     path('api/admin/', include ('admin.urls')),
     path('api/razorpay/', include('user.api_razorpay.urls')),
+    path('api/chat/', include('chat.urls')),
     path('admin/', admin.site.urls),
 ]
 
