@@ -55,6 +55,7 @@ REST_FRAMEWORK = {
 
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -78,6 +79,8 @@ INSTALLED_APPS = [
     'django_celery_results',
     'django_celery_beat',
     'celery',
+    'chat',
+    'channels',
 ]
 
 SITE_ID = 1
@@ -117,8 +120,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'carnova.wsgi.application'
-
 ASGI_APPLICATION = 'carnova.asgi.application'
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
 
 
 CORS_ALLOWED_ORIGINS = [
