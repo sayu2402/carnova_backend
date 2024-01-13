@@ -47,6 +47,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         receiver_id = self.scope['url_route']['kwargs']['receiver_id']
         receiver = await self.get_user(receiver_id)
         sender = await self.get_user(sender_id)
+
+        print(message,'__________________')
         
 
         # Create a new message object and save it to the database
