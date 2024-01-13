@@ -1,17 +1,14 @@
-from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
+from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from .models import Chat
 from .serializers import MessageSerializer
-from accounts.models import UserAccount
+from accounts.models import *
 
 class MessageList(APIView):
-    # permission_classes = [IsAuthenticated]
-
     def get(self, request, user_id):
         user = get_object_or_404(UserAccount, id=user_id)
 
@@ -53,3 +50,4 @@ class MessageList(APIView):
             'receiver_details': receiver_details,
             'authenticated_user_messages': authenticated_user_messages_data
         }, status=status.HTTP_200_OK)
+
