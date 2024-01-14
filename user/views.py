@@ -15,6 +15,8 @@ from .models import *
 from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.pagination import PageNumberPagination
+import logging
+
 
 
 # Create your views here
@@ -242,8 +244,30 @@ class WalletMoney(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+
 class SearchByLocation(ListAPIView):
-    serializer_class = CarHandlingSerializer  # Replace this with your actual serializer class
+    serializer_class = CarHandlingSerializer
+
+    def validate_date(self, date_str):
+        try:
+            return timezone.datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return None
+
+    def check_car_availability_by_dates(self, car_id, pickup_date, return_date):
+        return Booking.objects.filter(
+            car_id=car_id,
+            return_date__gt=pickup_date,
+            pickup_date__lt=return_date,
+            is_cancelled=False,
+        ).exists()
+
+    def check_car_availability_by_location(self, partial_location):
+        normalized_partial_location = partial_location.lower()
+        return CarHandling.objects.filter(
+            location__icontains=normalized_partial_location,
+            is_available=True
+        ).exists()
 
     def post(self, request, *args, **kwargs):
         car_id = self.request.data.get('carId')
@@ -252,33 +276,25 @@ class SearchByLocation(ListAPIView):
         partial_location = self.request.data.get('location', '').strip()
 
         try:
-            pickup_date = timezone.datetime.strptime(pickup_date_str, '%Y-%m-%d').date()
-            return_date = timezone.datetime.strptime(return_date_str, '%Y-%m-%d').date()
+            pickup_date = self.validate_date(pickup_date_str)
+            return_date = self.validate_date(return_date_str)
 
-            # Check car availability based on pickup and return dates
-            car_booking = Booking.objects.filter(
-                car_id=car_id,
-                return_date__gt=pickup_date,
-                pickup_date__lt=return_date,
-                is_cancelled=False,
-            )
+            if not pickup_date or not return_date:
+                return Response({"message": "Invalid date format"}, status=status.HTTP_400_BAD_REQUEST)
 
-            if car_booking.exists():
+            if self.check_car_availability_by_dates(car_id, pickup_date, return_date):
                 return Response({"message": "Car not available for the selected dates"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check car availability based on partial location match
-            normalized_partial_location = partial_location.lower()
-            matching_cars = CarHandling.objects.filter(
-                location__icontains=normalized_partial_location,
-                is_available=True
-            )
-
-            if matching_cars.exists():
+            if self.check_car_availability_by_location(partial_location):
+                matching_cars = CarHandling.objects.filter(
+                    location__icontains=partial_location,
+                    is_available=True
+                )
                 serializer = self.get_serializer(matching_cars, many=True)
                 return Response({"message": "Cars available at the location", "matching_cars": serializer.data}, status=status.HTTP_200_OK)
             else:
                 return Response({"message": "No cars available at the matched location"}, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as e:
-            print(e)
+            logging.error(f"An error occurred: {e}")
             return Response({"message": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
