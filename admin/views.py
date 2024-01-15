@@ -100,7 +100,6 @@ class ChartDataView(View):
 
         total_vendor = VendorProfile.objects.count()
 
-        # Calculate monthly revenue (assuming transactions have a date field)
         monthly_revenue = Transcation.objects.filter(transaction_date__month=1).aggregate(Sum('company_share'))['company_share__sum'] or 0
 
         data = {
