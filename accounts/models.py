@@ -20,6 +20,7 @@ class UserAccount(AbstractUser):
     phone_no = models.CharField(max_length=30, unique=True, blank=True, null=True)
     is_blocked = models.BooleanField(default=False)
     profile_photo = models.ImageField(upload_to='image_profiles/', blank=True, null=True)
+    online_status = models.BooleanField(default=False)
 
 
     def __str__(self):
