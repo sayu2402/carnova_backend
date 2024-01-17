@@ -1,14 +1,22 @@
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from accounts.models import UserAccount, VendorProfile
 from rest_framework.views import APIView
+from django.views import View
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from django.http import JsonResponse
 from .serializer import *
 from rest_framework import generics, status
+from django.db.models import Count
 from user.serializer import ChangePasswordSerializer, BookingSerializer
 from django.contrib.auth.hashers import make_password, check_password
 from .models import CarHandling
-from user.models import Booking
+from user.models import Booking, Transcation
+from django.db.models import Sum
+from django.utils import timezone
+from rest_framework.exceptions import NotFound
+
+
 
 
 # Create your views here.
@@ -174,3 +182,54 @@ class UpdateBookingStatusView(generics.UpdateAPIView):
         response_data['vendor_name'] = instance.vendor.user.username
 
         return Response(response_data, status=status.HTTP_200_OK)
+    
+
+class VendorStatsAPIView(APIView):
+    def get(self, request, user_id, *args, **kwargs):
+        try:
+            vendor = get_object_or_404(VendorProfile, user_id=user_id)
+            total_revenue = Transcation.objects.filter(vendor=vendor).aggregate(Sum('vendor_share'))['vendor_share__sum'] or 0
+            bookings_count = Booking.objects.filter(vendor=vendor).count()
+            total_cars = CarHandling.objects.filter(vendor=vendor).count()
+
+            # Calculate monthly revenue for the current month for the specific vendor
+            current_month = timezone.now().month
+            monthly_revenue = Transcation.objects.filter(
+                vendor=vendor,
+                transaction_date__month=current_month
+            ).aggregate(Sum('vendor_share'))['vendor_share__sum'] or 0
+
+            data = {
+                'totalRevenue': total_revenue,
+                'bookings': bookings_count,
+                'totalCars': total_cars,
+                'monthlyRevenue': monthly_revenue,
+            }
+
+            return Response(data, status=status.HTTP_200_OK)
+        except NotFound as e:
+            return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class PieChartVendorDataView(View):
+    def get(self, request, vendor_id, *args, **kwargs):
+        vendor = get_object_or_404(VendorProfile, user_id=vendor_id)
+
+        verification_choices = dict(CarHandling.VERIFICATION_CHOICES)
+        verification_data = CarHandling.objects.filter(vendor=vendor).values('verification_status').annotate(count=Count('verification_status'))
+
+        # Initialize counts for all choices, even if they are not present in the database
+        data = {
+            'labels': [verification_choices.get(status, status) for status, _ in CarHandling.VERIFICATION_CHOICES],
+            'data': [0] * len(CarHandling.VERIFICATION_CHOICES),
+        }
+
+        # Update counts based on the retrieved data
+        for item in verification_data:
+            status = item['verification_status']
+            index = list(verification_choices.keys()).index(status)
+            data['data'][index] = item['count']
+
+        return JsonResponse(data)
