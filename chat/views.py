@@ -23,12 +23,15 @@ class MessageList(APIView):
             (Q(sender=user, receiver=vendor) | Q(sender=vendor, receiver=user))
         ).order_by('timestamp')
 
+        
         # Serialize the list of messages
         messages_data = MessageSerializer(messages, many=True).data
 
         return Response({
             'user_id': user.id,
             'vendor_id': vendor.id,
+            'user_online_status': user.online_status,
+            'vendor_online_status': vendor.online_status,
             'messages': messages_data,
         }, status=status.HTTP_200_OK)
     
@@ -36,6 +39,7 @@ class MessageList(APIView):
 class MessageListVendor(APIView):
     def get(self, request, user_id):
         user = get_object_or_404(UserAccount, id=user_id)
+        vendor = get_object_or_404(UserAccount, id=user_id)
 
         # Get all unique receivers for the current user
         receivers = set(
@@ -62,6 +66,9 @@ class MessageListVendor(APIView):
 
         total_receivers = len(receivers)
 
+        print(user.online_status,"_________________________")
+
+
         # Additional logic to get the list of messages for the authenticated user
         authenticated_user_messages = Chat.objects.filter(
             Q(sender=user) | Q(receiver=user)
@@ -73,7 +80,8 @@ class MessageListVendor(APIView):
         return Response({
             'total_receivers': total_receivers,
             'receiver_details': receiver_details,
-            'authenticated_user_messages': authenticated_user_messages_data
+            'authenticated_user_messages': authenticated_user_messages_data,
+            'vendor_online_status': vendor.online_status,
         }, status=status.HTTP_200_OK)
 
 
@@ -115,6 +123,8 @@ class MessageLists(APIView):
         ).order_by('-timestamp')
 
         authenticated_user_messages_data = MessageSerializer(authenticated_user_messages, many=True).data
+
+        print(user.online_status,"_________________________")
 
 
         user_profile = get_object_or_404(UserProfile, user=user) 
