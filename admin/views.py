@@ -84,7 +84,7 @@ class CarDetailsView(RetrieveAPIView):
     
 
 class BookingListView(generics.ListAPIView):
-    queryset = Booking.objects.all().order_by('id')
+    queryset = Booking.objects.all().order_by('-id')
     serializer_class = BookingSerializer
 
 

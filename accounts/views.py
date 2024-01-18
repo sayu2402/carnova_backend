@@ -196,7 +196,7 @@ class PartnerSignupAPI(APIView):
 
 # list the user list
 class UserListView(ListAPIView):
-    queryset = UserProfile.objects.all()
+    queryset = UserProfile.objects.all().order_by('-id')
     serializer_class = UserModelSerializer
     pagination_class = PageNumberPagination
 
@@ -210,7 +210,7 @@ class UserListView(ListAPIView):
 
 # list the Vendor list
 class VendorListView(ListAPIView):
-    queryset = VendorProfile.objects.all()
+    queryset = VendorProfile.objects.all().order_by('-id')
     serializer_class = VendorModelSerializer
     pagination_class = PageNumberPagination  
     
