@@ -24,6 +24,14 @@ class CreateCarOrderAPIView(APIView):
             customuser_obj=UserAccount.objects.get(id=user_id)
             user_profile=UserProfile.objects.get(user=customuser_obj)
 
+            if customuser_obj.is_blocked:
+                response = {
+                    "status_code": status.HTTP_400_BAD_REQUEST,
+                    "message": "Blocked user cant book cars",
+                    "is_blocked": True
+                }
+                return Response(response)
+
             overlapping_bookings = Booking.objects.filter(
                 car=car,
                 return_date__gt=pickup_date,

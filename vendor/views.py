@@ -98,7 +98,17 @@ class VendorChangePasswordView(APIView):
 class AddCarView(APIView):
     def post(self, request, vendor_id):
         vendor = get_object_or_404(VendorProfile, user__id=vendor_id)
+        vendor_blk = get_object_or_404(UserAccount, id=vendor_id)
         vendor_name = vendor.user.username
+
+        if vendor_blk.is_blocked:
+            response = {
+                "status_code": status.HTTP_400_BAD_REQUEST,
+                "message": "Blocked user cant add cars",
+                "is_blocked": True
+                }
+            print("this is calling")
+            return Response(response)
 
         # Create a mutable copy of request.data
         mutable_data = request.data.copy()

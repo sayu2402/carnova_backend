@@ -31,7 +31,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-rpicbmia&qjy+mm_qn8$ts&f_^10&(gb7j5uf($0r*pmw9u#60'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -197,12 +197,12 @@ SIMPLE_JWT = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'carnova',
-        'USER': 'postgres',
-        'PASSWORD': 'admin123',
+        'ENGINE': os.getenv('DB_ENGINE'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': '',
-        'PORT': '5432',
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -261,8 +261,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587  
 EMAIL_USE_TLS = True 
-EMAIL_HOST_USER = 'sayooj.o12@gmail.com'
-EMAIL_HOST_PASSWORD = 'hhgvowzrpnsoojwt'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -284,8 +284,8 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
 
 
 # Google configuration
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = "819854252013-t5t6kqc8or1kiop8bd5dsqumc4upq1q2.apps.googleusercontent.com"
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "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"
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
 
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -306,7 +306,7 @@ AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = config('AWS_STORAGE_BUCKET_NAME')
 AWS_S3_SIGNATURE_NAME = 's3v4',
-AWS_S3_REGION_NAME='ap-south-1'
+AWS_S3_REGION_NAME= os.getenv('AWS_S3_REGION_NAME')
 AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL =  None
 AWS_S3_VERITY = True

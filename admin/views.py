@@ -15,6 +15,7 @@ from django.db.models import Sum
 from django.http import JsonResponse
 from django.db.models import Count
 from accounts.serializer import *
+from django.shortcuts import get_object_or_404
 
 
 
@@ -150,3 +151,24 @@ class Last5Booking(APIView):
         last_5_booking = Booking.objects.order_by('-id')[:5]
         serializer = BookingSerializer(last_5_booking, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class BlockUserView(APIView):
+    def post(self, request, user_id):
+        user = get_object_or_404(UserAccount, id=user_id)
+        print(user,"user___________")
+
+        # Toggle the block status
+        user.is_blocked = not user.is_blocked
+        user.save()
+
+        return Response({'status': 'success', 'is_blocked': user.is_blocked}, status=status.HTTP_200_OK)
+
+class BlockVendorView(APIView):
+    def post(self, request, vendor_id):
+        vendor = get_object_or_404(UserAccount, id=vendor_id)
+
+        vendor.is_blocked = not vendor.is_blocked
+        vendor.save()
+
+        return Response({'status': 'success', 'is_blocked': vendor.is_blocked}, status=status.HTTP_200_OK)

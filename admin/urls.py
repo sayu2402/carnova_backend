@@ -12,4 +12,6 @@ urlpatterns=[
     path('new-users/', Last5UsersAPIView.as_view(), name='new-user'),
     path('new-vendors/', Last5VendorsAPIView.as_view(), name='new-vendor'),
     path('new-bookings/', Last5Booking.as_view(), name='new-booking'),
+    path('block-user/<int:user_id>/', BlockUserView.as_view(), name='block_user'),
+    path('block-vendor/<int:vendor_id>/', BlockVendorView.as_view(), name='block_vendor'),
 ]
