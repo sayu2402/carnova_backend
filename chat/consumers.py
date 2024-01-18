@@ -79,7 +79,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 class OnlineStatusConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        print("connection method called,___________________________")
+        
         self.room_group_name = 'user'
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -90,34 +90,30 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
     
     async def receive(self, text_data=None, bytes_data=None):
         data = json.loads(text_data)
-        username = data['username']
+        user_id = data['user_id']
         connection_type = data['type']
-        print(f"Received data: username={username}, type={connection_type}")
-        await self.change_online_status(username, connection_type)
+        await self.change_online_status(user_id, connection_type)
     
     async def send_onlineStatus(self, event):
         data = json.loads(event.get('value'))
-        username = data['username']
+        user_id = data['id']
         online_status = data['status']
         await self.send(text_data=json.dumps({
-            'username': username,
+            'user_id': user_id,
             'online_status': online_status
         }))
     
     async def disconnect(self, message):
-        print("calling disconnect")
         self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
         )
     
     @database_sync_to_async
-    def change_online_status(self, username, c_type):
+    def change_online_status(self, user_id, c_type):
         try:
-            user = UserAccount.objects.get(username=username)
-            print("user here:", user)
+            user = UserAccount.objects.get(id=user_id)
         except UserAccount.DoesNotExist:
-            print(f"User with username '{username}' does not exist.")
             return
 
         if c_type == 'open':
@@ -126,3 +122,4 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
             user.online_status = False
 
         user.save()
+        
