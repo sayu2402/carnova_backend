@@ -107,7 +107,6 @@ class AddCarView(APIView):
                 "message": "Blocked user cant add cars",
                 "is_blocked": True
                 }
-            print("this is calling")
             return Response(response)
 
         # Create a mutable copy of request.data
@@ -124,7 +123,6 @@ class AddCarView(APIView):
             serializer.save(vendor_id=vendor.id)
             return Response(status=status.HTTP_201_CREATED)
         else:
-            print(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

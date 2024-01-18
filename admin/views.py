@@ -156,7 +156,6 @@ class Last5Booking(APIView):
 class BlockUserView(APIView):
     def post(self, request, user_id):
         user = get_object_or_404(UserAccount, id=user_id)
-        print(user,"user___________")
 
         # Toggle the block status
         user.is_blocked = not user.is_blocked
