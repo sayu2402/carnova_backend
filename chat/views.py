@@ -66,8 +66,6 @@ class MessageListVendor(APIView):
 
         total_receivers = len(receivers)
 
-        print(user.online_status,"_________________________")
-
 
         # Additional logic to get the list of messages for the authenticated user
         authenticated_user_messages = Chat.objects.filter(
@@ -123,9 +121,6 @@ class MessageLists(APIView):
         ).order_by('-timestamp')
 
         authenticated_user_messages_data = MessageSerializer(authenticated_user_messages, many=True).data
-
-        print(user.online_status,"_________________________")
-
 
         user_profile = get_object_or_404(UserProfile, user=user) 
         user_bookings = Booking.objects.filter(user=user_profile)
