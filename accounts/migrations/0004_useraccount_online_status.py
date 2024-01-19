@@ -4,15 +4,17 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0003_alter_useraccount_managers_alter_useraccount_groups_and_more'),
+        (
+            "accounts",
+            "0003_alter_useraccount_managers_alter_useraccount_groups_and_more",
+        ),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='useraccount',
-            name='online_status',
+            model_name="useraccount",
+            name="online_status",
             field=models.BooleanField(default=False),
         ),
     ]
