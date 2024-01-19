@@ -5,13 +5,13 @@ from django.conf.urls.static import static
 from accounts.views import GoogleLogin
 
 urlpatterns = [
-    path('api/', include('accounts.urls')),
-    path('api/user/', include('user.urls')),
-    path('api/vendor/', include('vendor.urls')),
-    path('api/admin/', include ('admin.urls')),
-    path('api/razorpay/', include('user.api_razorpay.urls')),
-    path('api/chat/', include('chat.urls')),
-    path('admin/', admin.site.urls),
+    path("api/", include("accounts.urls")),
+    path("api/user/", include("user.urls")),
+    path("api/vendor/", include("vendor.urls")),
+    path("api/admin/", include("admin.urls")),
+    path("api/razorpay/", include("user.api_razorpay.urls")),
+    path("api/chat/", include("chat.urls")),
+    path("admin/", admin.site.urls),
 ]
 
 if settings.DEBUG:

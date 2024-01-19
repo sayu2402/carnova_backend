@@ -7,17 +7,15 @@ from channels.auth import AuthMiddlewareStack
 
 from django import setup
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'carnova.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "carnova.settings")
 setup()
 
 
 from . import routing
 
-application = ProtocolTypeRouter({
-    "http": get_asgi_application(),
-    "websocket": AuthMiddlewareStack(
-        URLRouter(
-            routing.websocket_urlpatterns
-        )
-    ),
-})
+application = ProtocolTypeRouter(
+    {
+        "http": get_asgi_application(),
+        "websocket": AuthMiddlewareStack(URLRouter(routing.websocket_urlpatterns)),
+    }
+)
