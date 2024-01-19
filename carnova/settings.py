@@ -122,7 +122,7 @@ WSGI_APPLICATION = "carnova.wsgi.application"
 ASGI_APPLICATION = "carnova.asgi.application"
 
 
-CSRF_TRUSTED_ORIGINS = ['https://car.gotashoess.online/','http://*.127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ['https://car.gotashoess.online','http://*.127.0.0.1']
 
 
 CHANNEL_LAYERS = {
