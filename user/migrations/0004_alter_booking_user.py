@@ -5,16 +5,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0003_alter_useraccount_managers_alter_useraccount_groups_and_more'),
-        ('user', '0003_alter_booking_user'),
+        (
+            "accounts",
+            "0003_alter_useraccount_managers_alter_useraccount_groups_and_more",
+        ),
+        ("user", "0003_alter_booking_user"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='booking',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.userprofile'),
+            model_name="booking",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="accounts.userprofile"
+            ),
         ),
     ]

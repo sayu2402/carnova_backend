@@ -12,23 +12,24 @@ from datetime import datetime
 
 rz_client = RazorpayClient()
 
+
 class CreateCarOrderAPIView(APIView):
     def post(self, request, *args, **kwargs):
-        car_id = self.kwargs.get('carId')
-        pickup_date = self.kwargs.get('pickupDate').strip()
-        return_date = self.kwargs.get('returnDate').strip()
-        user_id = self.kwargs.get('userId')
+        car_id = self.kwargs.get("carId")
+        pickup_date = self.kwargs.get("pickupDate").strip()
+        return_date = self.kwargs.get("returnDate").strip()
+        user_id = self.kwargs.get("userId")
 
         try:
             car = CarHandling.objects.get(id=car_id)
-            customuser_obj=UserAccount.objects.get(id=user_id)
-            user_profile=UserProfile.objects.get(user=customuser_obj)
+            customuser_obj = UserAccount.objects.get(id=user_id)
+            user_profile = UserProfile.objects.get(user=customuser_obj)
 
             if customuser_obj.is_blocked:
                 response = {
                     "status_code": status.HTTP_400_BAD_REQUEST,
                     "message": "Blocked user cant book cars",
-                    "is_blocked": True
+                    "is_blocked": True,
                 }
                 return Response(response)
 
@@ -36,11 +37,14 @@ class CreateCarOrderAPIView(APIView):
                 car=car,
                 return_date__gt=pickup_date,
                 pickup_date__lt=return_date,
-                is_cancelled = False
+                is_cancelled=False,
             )
 
             if overlapping_bookings.exists():
-                return Response({"message": "No cars available for the selected dates"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"message": "No cars available for the selected dates"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             else:
                 create_order_serializer = CreateOrderSerializer(data=request.data)
 
@@ -49,20 +53,19 @@ class CreateCarOrderAPIView(APIView):
                     currency = create_order_serializer.validated_data.get("currency")
 
                     order_response = rz_client.create_order(
-                        amount=amount,
-                        currency=currency
+                        amount=amount, currency=currency
                     )
 
                     response = {
                         "status_code": status.HTTP_201_CREATED,
                         "message": "order_created",
-                        "data": order_response
+                        "data": order_response,
                     }
                 else:
                     response = {
                         "status_code": status.HTTP_400_BAD_REQUEST,
                         "message": "bad request",
-                        "error": create_order_serializer.errors
+                        "error": create_order_serializer.errors,
                     }
 
                 return Response(response)
@@ -71,28 +74,28 @@ class CreateCarOrderAPIView(APIView):
             response = {
                 "status_code": status.HTTP_400_BAD_REQUEST,
                 "message": "bad request",
-                "error": str(e)
+                "error": str(e),
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CreateCarBookingAPIView(APIView):
     def post(self, request, *args, **kwargs):
-        car_id = self.kwargs.get('carId')
-        pickup_date = self.kwargs.get('pickupDate').strip()
-        return_date = self.kwargs.get('returnDate').strip()
-        user_id = self.kwargs.get('userId')
+        car_id = self.kwargs.get("carId")
+        pickup_date = self.kwargs.get("pickupDate").strip()
+        return_date = self.kwargs.get("returnDate").strip()
+        user_id = self.kwargs.get("userId")
 
         car = CarHandling.objects.get(id=car_id)
-        customuser_obj=UserAccount.objects.get(id=user_id)
-        user_profile=UserProfile.objects.get(user=customuser_obj)
+        customuser_obj = UserAccount.objects.get(id=user_id)
+        user_profile = UserProfile.objects.get(user=customuser_obj)
 
         pickup_datetime = datetime.strptime(pickup_date, "%Y-%m-%d")
         return_datetime = datetime.strptime(return_date, "%Y-%m-%d")
 
         no_ofdays = (return_datetime - pickup_datetime).days + 1
 
-        daily_rate = car.price 
+        daily_rate = car.price
         total_amount = daily_rate * no_ofdays
 
         data = request.data
@@ -102,16 +105,14 @@ class CreateCarBookingAPIView(APIView):
         razorpay_signature = data.get("signature")
 
         data = {
-            "order_id":razorpay_order_id,
-            "payment_id":razorpay_payment_id,
-            "signature":razorpay_signature,
-            }
-        
+            "order_id": razorpay_order_id,
+            "payment_id": razorpay_payment_id,
+            "signature": razorpay_signature,
+        }
 
         create_order_serializer = TransactioncharcheckSerializer(data=data)
 
         if create_order_serializer.is_valid():
-            
             is_status = rz_client.verify_payment(
                 razorpay_order_id,
                 razorpay_payment_id,
@@ -125,7 +126,7 @@ class CreateCarBookingAPIView(APIView):
                     pickup_date=pickup_date,
                     return_date=return_date,
                     total_amount=total_amount,
-                    vendor=car.vendor
+                    vendor=car.vendor,
                 )
 
                 Transcation.objects.create(
@@ -142,10 +143,11 @@ class CreateCarBookingAPIView(APIView):
                 response = {
                     "status_code": status.HTTP_201_CREATED,
                     "message": "Order created successfully",
-                    "order_number": booking_obj.order_number
+                    "order_number": booking_obj.order_number,
                 }
             else:
-                response = {"status_code": status.HTTP_400_BAD_REQUEST,
+                response = {
+                    "status_code": status.HTTP_400_BAD_REQUEST,
                     "message": "Payment verification failed",
                 }
 
@@ -155,7 +157,6 @@ class CreateCarBookingAPIView(APIView):
             response = {
                 "status_code": status.HTTP_400_BAD_REQUEST,
                 "message": "Bad request",
-                "error": create_order_serializer.errors
+                "error": create_order_serializer.errors,
             }
             return Response(response)
-
