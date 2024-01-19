@@ -4,26 +4,25 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('vendor', '0002_initial'),
+        ("vendor", "0002_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='carhandling',
-            name='city',
+            model_name="carhandling",
+            name="city",
         ),
         migrations.RemoveField(
-            model_name='carhandling',
-            name='property_address',
+            model_name="carhandling",
+            name="property_address",
         ),
         migrations.RemoveField(
-            model_name='carhandling',
-            name='state',
+            model_name="carhandling",
+            name="state",
         ),
         migrations.RemoveField(
-            model_name='carhandling',
-            name='zip_code',
+            model_name="carhandling",
+            name="zip_code",
         ),
     ]

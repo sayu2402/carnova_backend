@@ -5,16 +5,22 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('accounts', '0003_alter_useraccount_managers_alter_useraccount_groups_and_more'),
-        ('vendor', '0003_remove_carhandling_city_and_more'),
+        (
+            "accounts",
+            "0003_alter_useraccount_managers_alter_useraccount_groups_and_more",
+        ),
+        ("vendor", "0003_remove_carhandling_city_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='carhandling',
-            name='vendor',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.CASCADE, to='accounts.vendorprofile'),
+            model_name="carhandling",
+            name="vendor",
+            field=models.ForeignKey(
+                default=None,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="accounts.vendorprofile",
+            ),
         ),
     ]

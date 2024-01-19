@@ -4,28 +4,27 @@ from .models import CarHandling
 from user.models import Booking
 
 
-
 class VendorModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAccount
-        fields = '__all__'
+        fields = "__all__"
         depth = 2
 
 
 class VendorProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAccount
-        fields = '__all__'
+        fields = "__all__"
         depth = 1
 
 
 class CarHandlingSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarHandling
-        fields = '__all__'
+        fields = "__all__"
 
     def create(self, validated_data):
-        vendor_data = validated_data.pop('vendor', None)
+        vendor_data = validated_data.pop("vendor", None)
 
         car_handling = CarHandling.objects.create(**validated_data)
 
@@ -39,5 +38,5 @@ class CarHandlingSerializer(serializers.ModelSerializer):
 class BookingHandlingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
-        fields = '__all__'
-        read_only_fields = ['verification_status']
+        fields = "__all__"
+        read_only_fields = ["verification_status"]

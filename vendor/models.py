@@ -1,28 +1,29 @@
 from django.db import models
 from accounts.models import VendorProfile
 
+
 class CarHandling(models.Model):
     FUEL_CHOICES = [
-        ('Diesel', 'Diesel'),
-        ('Petrol', 'Petrol'),
-        ('Electric', 'Electric'),
+        ("Diesel", "Diesel"),
+        ("Petrol", "Petrol"),
+        ("Electric", "Electric"),
     ]
 
     TRANSMISSION_CHOICES = [
-        ('Automatic', 'Automatic'),
-        ('Manual', 'Manual'),
+        ("Automatic", "Automatic"),
+        ("Manual", "Manual"),
     ]
 
     CATEGORY_CHOICES = [
-        ('Premium', 'Premium'),
-        ('Medium', 'Medium'),
-        ('Normal', 'Normal'),
+        ("Premium", "Premium"),
+        ("Medium", "Medium"),
+        ("Normal", "Normal"),
     ]
 
     VERIFICATION_CHOICES = [
-        ('Pending', 'Pending'),
-        ('Approved', 'Approved'),
-        ('Rejected', 'Rejected'),
+        ("Pending", "Pending"),
+        ("Approved", "Approved"),
+        ("Rejected", "Rejected"),
     ]
 
     vendor = models.ForeignKey(VendorProfile, on_delete=models.CASCADE)
@@ -34,10 +35,12 @@ class CarHandling(models.Model):
     location = models.CharField(max_length=100)
     model = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     description = models.TextField()
-    car_photo = models.ImageField(upload_to='')
-    document = models.FileField(upload_to='')
+    car_photo = models.ImageField(upload_to="")
+    document = models.FileField(upload_to="")
     is_available = models.BooleanField(default=True)
-    verification_status = models.CharField(max_length=20, choices=VERIFICATION_CHOICES, default='Pending')
+    verification_status = models.CharField(
+        max_length=20, choices=VERIFICATION_CHOICES, default="Pending"
+    )
 
     def __str__(self):
         return f"{self.brand} {self.car_name}"
