@@ -9,45 +9,38 @@ from channels.db import database_sync_to_async
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.sender_id = self.scope['url_route']['kwargs']['sender_id']
-        self.receiver_id = self.scope['url_route']['kwargs']['receiver_id']
-        self.room_channel_name = f'chat_{min(self.sender_id, self.receiver_id)}_{max(self.sender_id, self.receiver_id)}'
+        self.sender_id = self.scope["url_route"]["kwargs"]["sender_id"]
+        self.receiver_id = self.scope["url_route"]["kwargs"]["receiver_id"]
+        self.room_channel_name = f"chat_{min(self.sender_id, self.receiver_id)}_{max(self.sender_id, self.receiver_id)}"
 
         # Connect to the individual channel for this pair
-        await self.channel_layer.group_add(
-            self.room_channel_name,
-            self.channel_name
-        )
+        await self.channel_layer.group_add(self.room_channel_name, self.channel_name)
 
         await self.accept()
 
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
-            self.room_channel_name,
-            self.channel_name
+            self.room_channel_name, self.channel_name
         )
 
     @database_sync_to_async
     def create_message(self, message, sender, receiver):
         message_obj = Chat.objects.create(
-            message=message,
-            sender=sender,
-            receiver=receiver
+            message=message, sender=sender, receiver=receiver
         )
         return message_obj
-    
+
     @database_sync_to_async
     def get_user(self, id):
         return UserAccount.objects.get(id=id)
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        message = data['message']
-        sender_id = self.scope['url_route']['kwargs']['sender_id']
-        receiver_id = self.scope['url_route']['kwargs']['receiver_id']
+        message = data["message"]
+        sender_id = self.scope["url_route"]["kwargs"]["sender_id"]
+        receiver_id = self.scope["url_route"]["kwargs"]["receiver_id"]
         receiver = await self.get_user(receiver_id)
         sender = await self.get_user(sender_id)
-        
 
         # Create a new message object and save it to the database
         message_obj = await self.create_message(message, sender, receiver)
@@ -57,58 +50,50 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(
             self.room_channel_name,
             {
-                'type': 'chat_message',
-                'message': message,
-                'sender': sender_id,
-                'timestamp': str(message_obj.timestamp)
-            }
+                "type": "chat_message",
+                "message": message,
+                "sender": sender_id,
+                "timestamp": str(message_obj.timestamp),
+            },
         )
 
     async def chat_message(self, event):
-        message = event['message']
-        timestamp = event['timestamp']
-        sender = event['sender']
+        message = event["message"]
+        timestamp = event["timestamp"]
+        sender = event["sender"]
 
         # Send the message to the websocket
-        await self.send(text_data=json.dumps({
-            'message': message,
-            'sender': sender,
-            'timestamp': timestamp
-        }))
+        await self.send(
+            text_data=json.dumps(
+                {"message": message, "sender": sender, "timestamp": timestamp}
+            )
+        )
 
 
 class OnlineStatusConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        
-        self.room_group_name = 'user'
-        await self.channel_layer.group_add(
-            self.room_group_name,
-            self.channel_name
-        )
+        self.room_group_name = "user"
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
 
         await self.accept()
-    
+
     async def receive(self, text_data=None, bytes_data=None):
         data = json.loads(text_data)
-        user_id = data['user_id']
-        connection_type = data['type']
+        user_id = data["user_id"]
+        connection_type = data["type"]
         await self.change_online_status(user_id, connection_type)
-    
+
     async def send_onlineStatus(self, event):
-        data = json.loads(event.get('value'))
-        user_id = data['id']
-        online_status = data['status']
-        await self.send(text_data=json.dumps({
-            'user_id': user_id,
-            'online_status': online_status
-        }))
-    
-    async def disconnect(self, message):
-        self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
+        data = json.loads(event.get("value"))
+        user_id = data["id"]
+        online_status = data["status"]
+        await self.send(
+            text_data=json.dumps({"user_id": user_id, "online_status": online_status})
         )
-    
+
+    async def disconnect(self, message):
+        self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+
     @database_sync_to_async
     def change_online_status(self, user_id, c_type):
         try:
@@ -116,10 +101,9 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
         except UserAccount.DoesNotExist:
             return
 
-        if c_type == 'open':
+        if c_type == "open":
             user.online_status = True
         else:
             user.online_status = False
 
         user.save()
-        

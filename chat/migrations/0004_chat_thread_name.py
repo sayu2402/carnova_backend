@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('chat', '0003_alter_chat_receiver'),
+        ("chat", "0003_alter_chat_receiver"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='chat',
-            name='thread_name',
+            model_name="chat",
+            name="thread_name",
             field=models.CharField(blank=True, max_length=200, null=True),
         ),
     ]

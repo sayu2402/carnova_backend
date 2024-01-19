@@ -5,13 +5,20 @@ from user.models import *
 
 # Create your models here.
 
+
 class Chat(models.Model):
-    sender = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='sent_messages')
-    receiver = models.ForeignKey(UserAccount, on_delete=models.CASCADE, related_name='recieved_messages')
+    sender = models.ForeignKey(
+        UserAccount, on_delete=models.CASCADE, related_name="sent_messages"
+    )
+    receiver = models.ForeignKey(
+        UserAccount, on_delete=models.CASCADE, related_name="recieved_messages"
+    )
     message = models.TextField()
     timestamp = models.DateTimeField(default=timezone.now)
-    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, default=None, null=True, blank=True)
-    
+    booking = models.ForeignKey(
+        Booking, on_delete=models.CASCADE, default=None, null=True, blank=True
+    )
+
     def __str__(self):
         return f"{self.sender.username} - {self.receiver.username} - {self.timestamp}"
 
