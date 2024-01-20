@@ -347,3 +347,9 @@ class SearchByLocation(ListAPIView):
             return Response(
                 {"message": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST
             )
+
+class LatestAddedCars(ListAPIView):
+    queryset = CarHandling.objects.filter(verification_status="Approved").order_by(
+        "-id"
+    )[:4]
+    serializer_class = CarHandlingSerializer

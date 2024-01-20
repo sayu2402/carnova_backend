@@ -29,4 +29,5 @@ urlpatterns = [
         name="cancel-order",
     ),
     path("search-location", SearchByLocation.as_view(), name="search-location"),
+    path("latest-cars", LatestAddedCars.as_view(), name="latest-cars")
 ]
