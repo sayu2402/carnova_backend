@@ -25,3 +25,11 @@ class Chat(models.Model):
     class Meta:
         db_table = "chat"
         ordering = ("timestamp",)
+
+
+class Notification(models.Model):
+    message = models.CharField(max_length=100)
+    notification_type = models.CharField(max_length=20, default="pending", choices=[('car_approved', 'Car Approved')])
+    
+    def __str__(self):
+        return self.message
