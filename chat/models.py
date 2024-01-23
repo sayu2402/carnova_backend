@@ -30,6 +30,7 @@ class Chat(models.Model):
 class Notification(models.Model):
     message = models.CharField(max_length=100)
     notification_type = models.CharField(max_length=20, default="pending", choices=[('car_approved', 'Car Approved')])
+    rejection_reason = models.TextField(blank=True, null=True)
     
     def __str__(self):
         return self.message

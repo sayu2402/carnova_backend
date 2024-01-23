@@ -126,7 +126,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         )
 
     async def send_notification(self, event):
-        print("Sending notification:", event)
-        if event['notification_type'] == 'car_approved':
-            await self.send(text_data=json.dumps({'message': event['message'], 'notification_type': 'car_approved'}))
-            print("Notification sent successfully")
+        await self.send(text_data=json.dumps({
+            'notification_type': event['notification_type'],
+            'message': event['message']
+        }))
