@@ -111,7 +111,6 @@ class OnlineStatusConsumer(AsyncWebsocketConsumer):
 
 class NotificationConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        print("WebSocket connected")
         self.group_name = 'vendor_notifications'
         await self.channel_layer.group_add(
             self.group_name,
@@ -130,3 +129,4 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             'notification_type': event['notification_type'],
             'message': event['message']
         }))
+        

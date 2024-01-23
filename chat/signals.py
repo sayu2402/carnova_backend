@@ -29,7 +29,7 @@ def car_status_notification(sender, instance, created, **kwargs):
             message = f"Your car ({instance.brand} {instance.car_name}) has been approved by the admin."
             notification_type = 'car_approved'
         elif instance.verification_status == 'Rejected':
-            message = f"Your car ({instance.brand} {instance.car_name}) has been rejected by the admin. Reason: {instance.rejection_reason}"
+            message = f"Your car ({instance.brand} {instance.car_name}) has been rejected by the admin."
             notification_type = 'car_rejected'
         else:
             return
