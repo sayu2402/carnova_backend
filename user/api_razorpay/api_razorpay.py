@@ -25,6 +25,17 @@ class CreateCarOrderAPIView(APIView):
             customuser_obj = UserAccount.objects.get(id=user_id)
             user_profile = UserProfile.objects.get(user=customuser_obj)
 
+            id_card_exists = IDCard.objects.filter(user_profile=user_profile).exists()
+
+            if not id_card_exists:
+                return Response(
+                    {
+                        "message": "ID card not found. Upload your ID card before booking.",
+                        "status_code": status.HTTP_400_BAD_REQUEST,
+                        "id_card_exists": False,
+                    }
+                )
+
             if customuser_obj.is_blocked:
                 response = {
                     "status_code": status.HTTP_400_BAD_REQUEST,
@@ -60,6 +71,7 @@ class CreateCarOrderAPIView(APIView):
                         "status_code": status.HTTP_201_CREATED,
                         "message": "order_created",
                         "data": order_response,
+                        "id_card_exists" : id_card_exists,
                     }
                 else:
                     response = {

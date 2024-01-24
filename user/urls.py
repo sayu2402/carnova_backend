@@ -33,4 +33,5 @@ urlpatterns = [
     path('wallet-payment/<int:carId>/<str:pickupDate>/<str:returnDate>/<int:userId>/', WalletPaymentAPIView.as_view(), name='wallet-payment'),
     path('id-card/upload/', IDCardUploadView.as_view(), name='id_card_upload'),
     path('<int:user_id>/id-card/', IDCardView.as_view(), name='id-card'),
+    path('check-id-card/<int:user_id>/', CheckIDCardView.as_view(), name='check_id_card'),
 ]

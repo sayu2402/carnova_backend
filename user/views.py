@@ -390,6 +390,19 @@ class WalletPaymentAPIView(APIView):
                     "is_blocked": True,
                 }
                 return Response(response)
+            
+            id_card_exists = IDCard.objects.filter(user_profile=user_profile).exists()
+
+            print(id_card_exists, "_________")
+
+            if not id_card_exists:
+                return Response(
+                {
+                    "message": "ID card not found. Upload your ID card before booking.",
+                    "status_code": status.HTTP_400_BAD_REQUEST,
+                    "id_card_exists": False,
+                    }
+                )
 
             # Assuming request.data contains the payment amount
             payment_amount = request.data.get("amount")
@@ -500,3 +513,20 @@ class IDCardView(APIView):
             serializer.save(user=user_profile)
             return Response({'message': 'ID card uploaded successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CheckIDCardView(APIView):
+    def get(self, request, user_id, *args, **kwargs):
+        try:
+            user_profile = UserProfile.objects.get(user__id=user_id)
+            id_card_exists = IDCard.objects.filter(user_profile=user_profile).exists()
+
+            response_data = {
+                'id_card_exists': id_card_exists
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+        except UserProfile.DoesNotExist:
+            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
