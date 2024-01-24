@@ -16,6 +16,8 @@ from django.http import JsonResponse
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.pagination import PageNumberPagination
 import logging
+from datetime import datetime
+
 
 
 # Create your views here
@@ -353,3 +355,107 @@ class LatestAddedCars(ListAPIView):
         "-id"
     )[:4]
     serializer_class = CarHandlingSerializer
+
+
+
+class WalletPaymentAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        user_id = self.kwargs.get("userId")
+
+        try:
+            car_id = self.kwargs.get("carId")
+            pickup_date = self.kwargs.get("pickupDate").strip()
+            return_date = self.kwargs.get("returnDate").strip()
+            user_id = self.kwargs.get("userId")
+
+            car = CarHandling.objects.get(id=car_id)
+            customuser_obj = UserAccount.objects.get(id=user_id)
+            user_profile = UserProfile.objects.get(user=customuser_obj)
+
+            pickup_datetime = datetime.strptime(pickup_date, "%Y-%m-%d")
+            return_datetime = datetime.strptime(return_date, "%Y-%m-%d")
+
+            no_ofdays = (return_datetime - pickup_datetime).days + 1
+
+            daily_rate = car.price
+            total_amount = daily_rate * no_ofdays
+
+            wallet = Wallet.objects.get(user=user_profile)
+            current_balance = wallet.balance
+
+            if user_profile.user.is_blocked:
+                response = {
+                    "status_code": status.HTTP_400_BAD_REQUEST,
+                    "message": "Blocked user can't perform wallet transactions",
+                    "is_blocked": True,
+                }
+                return Response(response)
+
+            # Assuming request.data contains the payment amount
+            payment_amount = request.data.get("amount")
+
+            if payment_amount is not None and payment_amount > 0:
+
+                # Check if the wallet has sufficient balance
+                if wallet.balance >= payment_amount:
+                    # Deduct the amount from the user's wallet
+                    wallet.balance -= payment_amount
+                    wallet.save()
+
+                    booking_obj = Booking.objects.create(
+                    car=car,
+                    user=user_profile,
+                    pickup_date=pickup_date,
+                    return_date=return_date,
+                    total_amount=total_amount,
+                    vendor=car.vendor,
+                )
+
+                    Transcation.objects.create(
+                        booking=booking_obj,
+                        user=user_profile,
+                        vendor=car.vendor,
+                        vendor_share=0.7 * float(total_amount),
+                        company_share=0.3 * float(total_amount)
+                    )
+
+                    response = {
+                        "status_code": status.HTTP_200_OK,
+                        "message": "Payment successful",
+                        "wallet_balance": wallet.balance,
+                        "current_balance" : current_balance,
+                    }
+                else:
+                    response = {
+                        "status_code": status.HTTP_400_BAD_REQUEST,
+                        "message": "Insufficient funds in the wallet",
+                    }
+            else:
+                response = {
+                    "status_code": status.HTTP_400_BAD_REQUEST,
+                    "message": "Invalid payment amount",
+                }
+
+            return Response(response)
+
+        except UserProfile.DoesNotExist:
+            response = {
+                "status_code": status.HTTP_404_NOT_FOUND,
+                "message": "User not found",
+            }
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+
+        except Wallet.DoesNotExist:
+            response = {
+                "status_code": status.HTTP_404_NOT_FOUND,
+                "message": "Wallet not found",
+            }
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            response = {
+                "status_code": status.HTTP_400_BAD_REQUEST,
+                "message": "Bad request",
+                "error": str(e),
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)

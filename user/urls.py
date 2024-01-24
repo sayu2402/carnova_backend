@@ -29,5 +29,6 @@ urlpatterns = [
         name="cancel-order",
     ),
     path("search-location", SearchByLocation.as_view(), name="search-location"),
-    path("latest-cars", LatestAddedCars.as_view(), name="latest-cars")
+    path("latest-cars", LatestAddedCars.as_view(), name="latest-cars"),
+    path('wallet-payment/<int:carId>/<str:pickupDate>/<str:returnDate>/<int:userId>/', WalletPaymentAPIView.as_view(), name='wallet-payment'),
 ]
