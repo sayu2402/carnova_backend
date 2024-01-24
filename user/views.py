@@ -459,3 +459,44 @@ class WalletPaymentAPIView(APIView):
                 "error": str(e),
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+class IDCardUploadView(APIView):
+    def post(self, request, *args, **kwargs):
+        user_id = request.data.get("user_id")
+        user_profile = get_object_or_404(UserProfile, user__id=user_id)
+
+        serializer = IDCardSerializer(data=request.data)
+
+        if serializer.is_valid():
+            id_card = serializer.save(user_profile=user_profile)
+            return Response({"message": "ID card uploaded successfully"}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class IDCardView(APIView):
+    def get(self, request, user_id):
+        try:
+            user_profile = UserProfile.objects.get(user_id=user_id)
+        except UserProfile.DoesNotExist:
+            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            id_card = IDCard.objects.get(user_profile=user_profile)
+            serializer = IDCardSerializer(id_card)
+            return Response(serializer.data)
+        except IDCard.DoesNotExist:
+            return Response({'message': 'ID card not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def post(self, request, user_id):
+        try:
+            user_profile = UserProfile.objects.get(user_id=user_id)
+        except UserProfile.DoesNotExist:
+            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = IDCardSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=user_profile)
+            return Response({'message': 'ID card uploaded successfully'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

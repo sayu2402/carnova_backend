@@ -84,3 +84,12 @@ def generate_order_number():
 class Wallet(models.Model):
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
+
+
+class IDCard(models.Model):
+    user_profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
+    front_photo = models.ImageField(upload_to='', null=True, blank=True)
+    back_photo = models.ImageField(upload_to='', null=True, blank=True)
+
+    def __str__(self):
+        return f"IDCard - {self.user_profile.user.username}"
