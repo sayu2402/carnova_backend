@@ -29,8 +29,8 @@ class Chat(models.Model):
 
 class Notification(models.Model):
     NOTIFICATION_TYPES = [
-        ('car_approved', 'Car Approved'),
-        ('car_rejected', 'Car Rejected'),
+        ("car_approved", "Car Approved"),
+        ("car_rejected", "Car Rejected"),
     ]
 
     message = models.TextField()
