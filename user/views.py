@@ -19,7 +19,6 @@ import logging
 from datetime import datetime
 
 
-
 # Create your views here
 
 
@@ -350,12 +349,12 @@ class SearchByLocation(ListAPIView):
                 {"message": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST
             )
 
+
 class LatestAddedCars(ListAPIView):
     queryset = CarHandling.objects.filter(verification_status="Approved").order_by(
         "-id"
     )[:4]
     serializer_class = CarHandlingSerializer
-
 
 
 class WalletPaymentAPIView(APIView):
@@ -390,17 +389,17 @@ class WalletPaymentAPIView(APIView):
                     "is_blocked": True,
                 }
                 return Response(response)
-            
+
             id_card_exists = IDCard.objects.filter(user_profile=user_profile).exists()
 
             print(id_card_exists, "_________")
 
             if not id_card_exists:
                 return Response(
-                {
-                    "message": "ID card not found. Upload your ID card before booking.",
-                    "status_code": status.HTTP_400_BAD_REQUEST,
-                    "id_card_exists": False,
+                    {
+                        "message": "ID card not found. Upload your ID card before booking.",
+                        "status_code": status.HTTP_400_BAD_REQUEST,
+                        "id_card_exists": False,
                     }
                 )
 
@@ -408,7 +407,6 @@ class WalletPaymentAPIView(APIView):
             payment_amount = request.data.get("amount")
 
             if payment_amount is not None and payment_amount > 0:
-
                 # Check if the wallet has sufficient balance
                 if wallet.balance >= payment_amount:
                     # Deduct the amount from the user's wallet
@@ -416,27 +414,27 @@ class WalletPaymentAPIView(APIView):
                     wallet.save()
 
                     booking_obj = Booking.objects.create(
-                    car=car,
-                    user=user_profile,
-                    pickup_date=pickup_date,
-                    return_date=return_date,
-                    total_amount=total_amount,
-                    vendor=car.vendor,
-                )
+                        car=car,
+                        user=user_profile,
+                        pickup_date=pickup_date,
+                        return_date=return_date,
+                        total_amount=total_amount,
+                        vendor=car.vendor,
+                    )
 
                     Transcation.objects.create(
                         booking=booking_obj,
                         user=user_profile,
                         vendor=car.vendor,
                         vendor_share=0.7 * float(total_amount),
-                        company_share=0.3 * float(total_amount)
+                        company_share=0.3 * float(total_amount),
                     )
 
                     response = {
                         "status_code": status.HTTP_200_OK,
                         "message": "Payment successful",
                         "wallet_balance": wallet.balance,
-                        "current_balance" : current_balance,
+                        "current_balance": current_balance,
                     }
                 else:
                     response = {
@@ -483,7 +481,10 @@ class IDCardUploadView(APIView):
 
         if serializer.is_valid():
             id_card = serializer.save(user_profile=user_profile)
-            return Response({"message": "ID card uploaded successfully"}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"message": "ID card uploaded successfully"},
+                status=status.HTTP_201_CREATED,
+            )
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -493,25 +494,34 @@ class IDCardView(APIView):
         try:
             user_profile = UserProfile.objects.get(user_id=user_id)
         except UserProfile.DoesNotExist:
-            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"message": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         try:
             id_card = IDCard.objects.get(user_profile=user_profile)
             serializer = IDCardSerializer(id_card)
             return Response(serializer.data)
         except IDCard.DoesNotExist:
-            return Response({'message': 'ID card not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"message": "ID card not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
     def post(self, request, user_id):
         try:
             user_profile = UserProfile.objects.get(user_id=user_id)
         except UserProfile.DoesNotExist:
-            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"message": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         serializer = IDCardSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=user_profile)
-            return Response({'message': 'ID card uploaded successfully'}, status=status.HTTP_201_CREATED)
+            return Response(
+                {"message": "ID card uploaded successfully"},
+                status=status.HTTP_201_CREATED,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -521,12 +531,12 @@ class CheckIDCardView(APIView):
             user_profile = UserProfile.objects.get(user__id=user_id)
             id_card_exists = IDCard.objects.filter(user_profile=user_profile).exists()
 
-            response_data = {
-                'id_card_exists': id_card_exists
-            }
+            response_data = {"id_card_exists": id_card_exists}
 
             return Response(response_data, status=status.HTTP_200_OK)
         except UserProfile.DoesNotExist:
-            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"message": "User not found"}, status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
-            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

@@ -88,8 +88,8 @@ class Wallet(models.Model):
 
 class IDCard(models.Model):
     user_profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE)
-    front_photo = models.ImageField(upload_to='', null=True, blank=True)
-    back_photo = models.ImageField(upload_to='', null=True, blank=True)
+    front_photo = models.ImageField(upload_to="", null=True, blank=True)
+    back_photo = models.ImageField(upload_to="", null=True, blank=True)
 
     def __str__(self):
         return f"IDCard - {self.user_profile.user.username}"

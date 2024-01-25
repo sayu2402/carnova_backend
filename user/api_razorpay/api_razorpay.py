@@ -71,7 +71,7 @@ class CreateCarOrderAPIView(APIView):
                         "status_code": status.HTTP_201_CREATED,
                         "message": "order_created",
                         "data": order_response,
-                        "id_card_exists" : id_card_exists,
+                        "id_card_exists": id_card_exists,
                     }
                 else:
                     response = {

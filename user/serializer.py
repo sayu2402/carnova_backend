@@ -47,4 +47,4 @@ class WalletSerializer(serializers.ModelSerializer):
 class IDCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = IDCard
-        fields = ['front_photo', 'back_photo'] 
+        fields = ["front_photo", "back_photo"]
