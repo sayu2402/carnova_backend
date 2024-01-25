@@ -174,7 +174,7 @@ class BookingListView(APIView):
     def get(self, request, id):
         try:
             vendor = VendorProfile.objects.get(user_id=id)
-            bookings = Booking.objects.filter(vendor=vendor).order_by('-id')
+            bookings = Booking.objects.filter(vendor=vendor).order_by("-id")
 
             serialized_bookings = BookingSerializer(bookings, many=True)
 
