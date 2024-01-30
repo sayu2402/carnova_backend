@@ -6,7 +6,6 @@ from .emails import *
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from rest_framework import status
-from rest_framework.decorators import api_view
 from accounts.models import UserProfile, VendorProfile, UserAccount
 from rest_framework.pagination import PageNumberPagination
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter

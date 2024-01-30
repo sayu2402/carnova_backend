@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from accounts.models import UserAccount
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
