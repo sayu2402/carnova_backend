@@ -133,12 +133,31 @@ class CarDetailView(APIView):
 class CarAvailabilityAPIView(APIView):
     def post(self, request, *args, **kwargs):
         car_id = self.kwargs.get("carId")
+        user_id = self.kwargs.get("userId")
+
+        print(user_id, "_________________")
+
+        customuser_obj = UserAccount.objects.get(id=user_id)
+        user_profile = UserProfile.objects.get(user=customuser_obj)
+        
         pickup_date_str = self.kwargs.get("pickupDate").strip()
         return_date_str = self.kwargs.get("returnDate").strip()
 
         try:
             pickup_date = timezone.datetime.strptime(pickup_date_str, "%Y-%m-%d").date()
             return_date = timezone.datetime.strptime(return_date_str, "%Y-%m-%d").date()
+
+
+            id_card_exists = IDCard.objects.filter(user_profile=user_profile).exists()
+
+            if not id_card_exists:
+                return Response(
+                    {
+                        "message": "ID card not found. Upload your ID card before booking.",
+                        "status_code": status.HTTP_400_BAD_REQUEST,
+                        "id_card_exists": False,
+                    }
+                )
 
             car_booking = Booking.objects.filter(
                 car_id=car_id,
@@ -390,8 +409,6 @@ class WalletPaymentAPIView(APIView):
                 return Response(response)
 
             id_card_exists = IDCard.objects.filter(user_profile=user_profile).exists()
-
-            print(id_card_exists, "_________")
 
             if not id_card_exists:
                 return Response(
