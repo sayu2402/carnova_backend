@@ -39,4 +39,5 @@ urlpatterns = [
         PieChartVendorDataView.as_view(),
         name="vendor-pie-chart-data",
     ),
+    path('<int:vendor_id>/cancel-order/<int:booking_id>/', VendorCancelOrder.as_view(), name='vendor_cancel_order'),
 ]

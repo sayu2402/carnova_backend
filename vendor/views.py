@@ -15,6 +15,7 @@ from user.models import Booking, Transcation
 from django.db.models import Sum
 from django.utils import timezone
 from rest_framework.exceptions import NotFound
+from user.models import *
 
 
 # Create your views here.
@@ -275,3 +276,31 @@ class PieChartVendorDataView(View):
             data["data"][index] = item["count"]
 
         return JsonResponse(data)
+
+
+class VendorCancelOrder(APIView):
+    def post(self, request, vendor_id, booking_id, *args, **kwargs):
+        try:
+            # Retrieve the booking
+            booking = get_object_or_404(Booking, id=booking_id, car__vendor__user=vendor_id)
+
+
+            # Adjust wallet balance
+            vendor_wallet, created = Wallet.objects.get_or_create(user=booking.user)
+            vendor_wallet.balance += booking.total_amount
+            vendor_wallet.save()
+
+            # Mark booking as cancelled
+            booking.is_cancelled = True
+            booking.save()
+
+            # Adjust transaction
+            transaction = Transcation.objects.get(booking=booking)
+            transaction.vendor_share -= int(booking.total_amount * 0.7)
+            transaction.company_share -= int(booking.total_amount * 0.3)
+            transaction.save()
+
+            return Response({"message": "Booking cancelled successfully"}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
