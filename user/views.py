@@ -16,6 +16,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.pagination import PageNumberPagination
 import logging
 from datetime import datetime
+from datetime import datetime, timedelta
+
 
 
 # Create your views here
@@ -135,8 +137,6 @@ class CarAvailabilityAPIView(APIView):
         car_id = self.kwargs.get("carId")
         user_id = self.kwargs.get("userId")
 
-        print(user_id, "_________________")
-
         customuser_obj = UserAccount.objects.get(id=user_id)
         user_profile = UserProfile.objects.get(user=customuser_obj)
         
@@ -147,6 +147,26 @@ class CarAvailabilityAPIView(APIView):
             pickup_date = timezone.datetime.strptime(pickup_date_str, "%Y-%m-%d").date()
             return_date = timezone.datetime.strptime(return_date_str, "%Y-%m-%d").date()
 
+            # Check if pickup date is not in the past
+            if pickup_date < timezone.now().date():
+                return JsonResponse(
+                    {"message": "Pickup date cannot be in the past"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Check if return date is later than pickup date
+            if return_date <= pickup_date:
+                return JsonResponse(
+                    {"message": "Return date must be later than pickup date"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Check if return date is at least one day later than pickup date
+            if (return_date - pickup_date).days < 1:
+                return JsonResponse(
+                    {"message": "Minimum booking period is one day"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             id_card_exists = IDCard.objects.filter(user_profile=user_profile).exists()
 
@@ -298,16 +318,20 @@ class WalletMoney(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class SearchByLocation(ListAPIView):
-    serializer_class = CarHandlingSerializer
+# The SearchByLocation class is a view that inherits from ListAPIView.
+class SearchByLocation(ListAPIView):  # Defining a class-based view SearchByLocation
+    serializer_class = CarHandlingSerializer  # Specifying the serializer class for this view
 
-    def validate_date(self, date_str):
+    def validate_date(self, date_str):  # Defining a method to validate a date string
         try:
+            # Trying to parse the date string into a date object
             return timezone.datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
+            # If the date string is invalid, return None
             return None
 
-    def check_car_availability_by_dates(self, car_id, pickup_date, return_date):
+    def check_car_availability_by_dates(self, car_id, pickup_date, return_date):  # Defining a method to check car availability
+        # Checking if there are any bookings for the car within the given date range
         return Booking.objects.filter(
             car_id=car_id,
             return_date__gt=pickup_date,
@@ -315,56 +339,80 @@ class SearchByLocation(ListAPIView):
             is_cancelled=False,
         ).exists()
 
-    def check_car_availability_by_location(self, partial_location):
-        normalized_partial_location = partial_location.lower()
-        return CarHandling.objects.filter(
-            location__icontains=normalized_partial_location, is_available=True
-        ).exists()
-
-    def post(self, request, *args, **kwargs):
-        car_id = self.request.data.get("carId")
-        pickup_date_str = self.request.data.get("pickupDate").strip()
-        return_date_str = self.request.data.get("returnDate").strip()
-        partial_location = self.request.data.get("location", "").strip()
+    def post(self, request, *args, **kwargs):  # Defining the post method for this view
+        car_id = self.request.data.get("carId")  # Getting the car ID from the request data
+        pickup_date_str = self.request.data.get("pickupDate").strip()  # Getting the pickup date from the request data
+        return_date_str = self.request.data.get("returnDate").strip()  # Getting the return date from the request data
+        partial_location = self.request.data.get("location", "").strip()  # Getting the location from the request data
 
         try:
+            # Validating the pickup and return dates
             pickup_date = self.validate_date(pickup_date_str)
             return_date = self.validate_date(return_date_str)
 
             if not pickup_date or not return_date:
+                # If the dates are invalid, return a bad request response
                 return Response(
-                    {"message": "Invalid date format"},
+                    {"message": "Invalid date format. Please use YYYY-MM-DD format."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            today = timezone.now().date()  # Getting the current date
+            if pickup_date < today:
+                # If the pickup date is in the past, return a bad request response
+                return Response(
+                    {"message": "Pickup date cannot be earlier than today."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if return_date < pickup_date:
+                # If the return date is earlier than the pickup date, return a bad request response
+                return Response(
+                    {"message": "Return date cannot be earlier than pickup date."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
             if self.check_car_availability_by_dates(car_id, pickup_date, return_date):
+                # If the car is not available for the given dates, return a bad request response
                 return Response(
-                    {"message": "Car not available for the selected dates"},
+                    {"message": "The car is not available for the selected dates."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            if self.check_car_availability_by_location(partial_location):
-                matching_cars = CarHandling.objects.filter(
-                    location__icontains=partial_location, is_available=True
+            if not partial_location:
+                # If the location is empty, return a bad request response
+                return Response(
+                    {"message": "Please enter a location."},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
+
+            normalized_partial_location = partial_location.lower()  # Converting the location to lowercase
+            matching_cars = CarHandling.objects.filter(  # Filtering cars by location and availability
+                location__icontains=normalized_partial_location, is_available=True
+            )
+            if matching_cars:
+                # If there are matching cars, serialize them and return a successful response
                 serializer = self.get_serializer(matching_cars, many=True)
                 return Response(
                     {
-                        "message": "Cars available at the location",
+                        "message": "Cars available at the location.",
                         "matching_cars": serializer.data,
                     },
                     status=status.HTTP_200_OK,
                 )
             else:
+                # If there are no matching cars, return a bad request response
                 return Response(
-                    {"message": "No cars available at the matched location"},
+                    {"message": "No cars available at the matched location."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
         except Exception as e:
+            # If any exception occurs, log the error and return a bad request response
             logging.error(f"An error occurred: {e}")
             return Response(
-                {"message": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST
+                {"message": "Something went wrong. Please try again."},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
 
